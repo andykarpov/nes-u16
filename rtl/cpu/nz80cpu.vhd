@@ -2,16 +2,10 @@
 -- NZ80CPU v1.2.1
 -------------------------------------------------------------------------------
 -- Engineer: 	MVV
+--
 -- Description: 
 --		Implementation of Z80 compatible CPU based on sources file
 --		NextZ80 (Verilog) Version 1.0 By Nicolae Dumitrache 
---
--- Versions:
--- V1.0.0	15.04.2012	Initial release.
--- V1.1.0	01.05.2013
--- V1.2.0	08.07.2013	��������� � ������ "Register select"
--- V1.2.1	09.04.2014
-
 -------------------------------------------------------------------------------
 
 library	ieee;

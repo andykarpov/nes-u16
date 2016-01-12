@@ -140,10 +140,10 @@ module NES(input clk, input reset, input ce,
            output [7:0] memory_dout,
            
            output [8:0] cycle,
-           output [8:0] scanline,
+           output [8:0] scanline
            
-           output reg [31:0] dbgadr,
-           output [1:0] dbgctr
+//           output reg [31:0] dbgadr,
+//           output [1:0] dbgctr
            );
   reg [7:0] from_data_bus;
   wire [7:0] cpu_dout;

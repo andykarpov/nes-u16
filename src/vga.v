@@ -7,7 +7,7 @@ module VgaDriver(input clk,
                  output [9:0] vga_hcounter,
                  output [9:0] vga_vcounter,
                  output [9:0] next_pixel_x, // The pixel we need NEXT cycle.
-		 output blank,	// MVV,rev.20141208
+		 output blank,	// MVV,20141208
                  input [14:0] pixel,        // Pixel for current cycle.
                  input sync,
                  input border);
@@ -21,13 +21,13 @@ wire hend = (h == 681);                       // End of line, 682 pixels.
 wire vpicture = (v < 480);                    // 480 lines of picture
 wire vsync_on  = hsync_on && (v == 480 + 10); // Vsync ON, 10 lines front porch.
 wire vsync_off = hsync_on && (v == 480 + 12); // Vsync OFF, 2 lines sync signal
-wire vend = (v == 524);                       // End of picture, 524 lines. (Should really be 525 according to NTSC spec)
+wire vend = (v == 523);                       // End of picture, 524 lines. (Should really be 525 according to NTSC spec)
 wire inpicture = hpicture && vpicture;
 assign vga_hcounter = h;
 assign vga_vcounter = v;
 wire [9:0] new_h = (hend || sync) ? 0 : h + 1;
 assign next_pixel_x = {sync ? 1'b0 : hend ? !v[0] : v[0], new_h[8:0]};
-assign blank = !inpicture;	// MVV,rev.20141208
+assign blank = !inpicture;	// MVV,20141208
 
 always @(posedge clk) begin
   h <= new_h;
