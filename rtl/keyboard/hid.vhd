@@ -1,4 +1,4 @@
--------------------------------------------------------------------[11.11.2015]
+-------------------------------------------------------------------[10.02.2016]
 -- USB HID
 -------------------------------------------------------------------------------
 -- Engineer:	MVV
@@ -123,14 +123,14 @@ O_KEY6 <= key6;
 	process (cnt1, I_JOYPAD_KEYS)
 	begin
 		case cnt1 is
-			when "000" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(7);	-- A
-			when "001" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(6);	-- B
-			when "010" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(5);	-- Select
-			when "011" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(4);	-- Start
-			when "100" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(3);	-- Up
-			when "101" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(2);	-- Down
-			when "110" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(1);	-- Left
 			when "111" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(0);	-- Right
+			when "110" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(1);	-- Left
+			when "101" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(2);	-- Down
+			when "100" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(3);	-- Up
+			when "011" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(4);	-- Start
+			when "010" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(5);	-- Select
+			when "001" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(6);	-- B
+			when "000" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(7);	-- A
 			when others => null;
 		end case;
 	end process;
@@ -147,14 +147,14 @@ O_KEY6 <= key6;
 	process (cnt2, I_JOYPAD_KEYS)
 	begin
 		case cnt2 is
-			when "000" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(8);	-- A
-			when "001" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(9);	-- B
-			when "010" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(10);	-- Select
-			when "011" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(11);	-- Start
-			when "100" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(12);	-- Up
-			when "101" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(13);	-- Down
-			when "110" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(14);	-- Left
-			when "111" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(15);	-- Right
+			when "111" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(8);	-- Right
+			when "110" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(9);	-- Left
+			when "101" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(10);	-- Down
+			when "100" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(11);	-- Up
+			when "011" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(12);	-- Start
+			when "010" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(13);	-- Select
+			when "001" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(14);	-- B
+			when "000" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(15);	-- A
 			when others => null;
 		end case;
 	end process;

@@ -1,7 +1,7 @@
 // Copyright (c) 2012-2013 Ludvig Strigeus
 // This program is GPL Licensed. See COPYING for the full license.
 //
-// Modified for ReVerSE-U16 By MVV (build 20160108)
+// Modified for ReVerSE-U16 By MVV (build 20160215)
 
 //`timescale 1ns / 1ps
 
@@ -18,8 +18,7 @@ module GameLoader(
 	output [7:0]		mem_data,
 	output			mem_write,
 	output [31:0]		mapper_flags,
-	output reg		done,
-	output			error);
+	output reg		done);
 	
 	reg [ 1:0] state = 0;
 	reg [ 7:0] prgsize;
@@ -27,31 +26,28 @@ module GameLoader(
 	reg [ 7:0] ines[0:15];	// 16 bytes of iNES header
 	reg [21:0] bytes_left;
 	
-	assign error = (state == 3);
-	wire [7:0] prgrom = ines[4];
-	wire [7:0] chrrom = ines[5];
+//	assign error = (state == 3);
 	assign mem_data = indata;
 	assign mem_write = (bytes_left != 0) && (state == 1 || state == 2) && indata_clk;
 	
-	wire [2:0] prg_size =	prgrom <= 1 ? 0 :
-				prgrom <= 2 ? 1 : 
-				prgrom <= 4 ? 2 : 
-				prgrom <= 8 ? 3 : 
-				prgrom <= 16 ? 4 : 
-				prgrom <= 32 ? 5 : 
-				prgrom <= 64 ? 6 : 7;
+	wire [2:0] prg_size =	ines[4] <= 1 ? 0 :
+				ines[4] <= 2 ? 1 : 
+				ines[4] <= 4 ? 2 : 
+				ines[4] <= 8 ? 3 : 
+				ines[4] <= 16 ? 4 : 
+				ines[4] <= 32 ? 5 : 
+				ines[4] <= 64 ? 6 : 7;
 												
-	wire [2:0] chr_size = 	chrrom <= 1 ? 0 : 
-				chrrom <= 2 ? 1 : 
-				chrrom <= 4 ? 2 : 
-				chrrom <= 8 ? 3 : 
-				chrrom <= 16 ? 4 : 
-				chrrom <= 32 ? 5 : 
-				chrrom <= 64 ? 6 : 7;
+	wire [2:0] chr_size = 	ines[5] <= 1 ? 0 : 
+				ines[5] <= 2 ? 1 : 
+				ines[5] <= 4 ? 2 : 
+				ines[5] <= 8 ? 3 : 
+				ines[5] <= 16 ? 4 : 
+				ines[5] <= 32 ? 5 : 
+				ines[5] <= 64 ? 6 : 7;
 	
-	wire [7:0] mapper = {ines[7][7:4], ines[6][7:4]};
-	wire has_chr_ram = (chrrom == 0);
-	assign mapper_flags = {16'b0, has_chr_ram, ines[6][0], chr_size, prg_size, mapper};
+	wire has_chr_ram = (ines[5] == 0);
+	assign mapper_flags = {16'b0, has_chr_ram, ines[6][0], chr_size, prg_size, ines[7][7:4], ines[6][7:4]};
 	
 	always @(posedge clk) begin
 		if (reset) begin
@@ -65,7 +61,7 @@ module GameLoader(
 			0: if (indata_clk) begin
 				ctr <= ctr + 1;
 				ines[ctr] <= indata;
-				bytes_left <= {prgrom, 14'b0};
+				bytes_left <= {ines[4], 14'b0};
 				if (ctr == 4'b1111)
 					state <= (ines[0] == 8'h4E) && (ines[1] == 8'h45) && (ines[2] == 8'h53) && (ines[3] == 8'h1A) && !ines[6][2] && !ines[6][3] ? 1 : 3;
 				end
@@ -78,7 +74,7 @@ module GameLoader(
 				end else if (state == 1) begin
 					state <= 2;
 					mem_addr <= 22'b10_0000_0000_0000_0000_0000; // Address for CHR
-					bytes_left <= {1'b0, chrrom, 13'b0};
+					bytes_left <= {1'b0, ines[5], 13'b0};
 				end else if (state == 2) begin
 				done <= 1;
 				end
@@ -173,8 +169,8 @@ module NES_u16(
 	// =======================================================
 	osd cocpu(
 		.I_RESET	(!KEY_RESET),
-		.I_CLK		(clk_sdram),
-		.I_CLK_CPU	(clk),
+		.I_CLK		(clk42),	// 42MHz
+		.I_CLK_CPU	(clk),		// 21MHz
 		.I_KEY0		(key0),
 		.I_KEY1		(key1),
 		.I_KEY2		(key2),
@@ -189,6 +185,7 @@ module NES_u16(
 		.I_BLUE		(nes_b),
 		.I_HCNT		(vga_hcounter),
 		.I_VCNT		(vga_vcounter),
+		.I_DOWNLOAD_OK	(loader_done),
 		.O_RED		(vga_red),
 		.O_GREEN	(vga_green),
 		.O_BLUE		(vga_blue),
@@ -196,12 +193,12 @@ module NES_u16(
 		.O_SWITCHES	(switches),
 		.O_JOYPAD_KEYS	(joypad_keys),
 		.O_SPI_CLK	(SPI_SCK),
-		.O_SPI1_CLK	(spi1_clk),
 		.O_SPI_MOSI	(SPI_DI),
-		.O_SPI1_MOSI	(spi1_di),
 		.O_SPI_CS_N	(SPI_CSn),	// SPI FLASH
 		.O_SPI1_CS_N	(),		// SD Card
-		.O_SPI2_CS_N	(spi2_cs_n)	// data_io
+		.O_DOWNLOAD_DO	(loader_input),
+		.O_DOWNLOAD_WR	(loader_clk),
+		.O_DOWNLOAD_ON	(downloading)
 	);
 
 	wire [15:0] joypad_keys;
@@ -222,8 +219,8 @@ module NES_u16(
 		.I_JOYPAD_CLK1	(joypad_clock[0]),
 		.I_JOYPAD_CLK2	(joypad_clock[1]),
 		.I_JOYPAD_LATCH	(joypad_strobe),
-		.O_JOYPAD_DATA1	(joypad_bits[0]),
-		.O_JOYPAD_DATA2	(joypad_bits2[0]),
+		.O_JOYPAD_DATA1	(joypad_bits),
+		.O_JOYPAD_DATA2	(joypad_bits2),
 		.O_KEY0		(key0),
 		.O_KEY1		(key1),
 		.O_KEY2		(key2),
@@ -240,13 +237,15 @@ module NES_u16(
 	wire clock_locked;
 	wire clk_sdram;
 	wire clk_dvi;
-	assign SDRAM_CLK = !clk_sdram;
+	wire clk42;
+	assign SDRAM_CLK = clk_sdram;
 	
 	clk clock_21mhz(
 		.inclk0		(CLOCK_50),
 		.c0		(clk_sdram),
 		.c1		(clk_dvi),
 		.c2		(clk),
+		.c3		(clk42),
 		.locked		(clock_locked));
 
 	// hold machine in reset until first download starts
@@ -283,7 +282,7 @@ module NES_u16(
 	wire		memory_write;
 	wire [7:0]	memory_din_cpu, memory_din_ppu;
 	wire [7:0]	memory_dout;
-	reg [7:0]	joypad_bits, joypad_bits2;
+	wire		joypad_bits, joypad_bits2;
 	reg [1:0]	last_joypad_clock;
 	reg [1:0]	nes_ce;
 	wire [21:0]	loader_addr;
@@ -291,7 +290,7 @@ module NES_u16(
 	wire		loader_reset = !downloading; //loader_conf[0];
 	wire		loader_write;
 	wire [31:0]	mapper_flags;
-	wire		loader_done, loader_fail;
+	wire		loader_done;
 	
 	GameLoader loader(
 		clk,
@@ -302,8 +301,7 @@ module NES_u16(
 		loader_write_data,
 		loader_write,
 		mapper_flags,
-		loader_done,
-		loader_fail);
+		loader_done);
 
 //TH	wire reset_nes = (buttons[1] || !loader_done);
 //	wire reset_nes = (init_reset || buttons[1] || status[0] || status[4] || downloading);
@@ -312,8 +310,8 @@ module NES_u16(
 	wire run_nes = (nes_ce == 3) && !reset_nes;
 
 	// NES is clocked at every 4th cycle.
-//	always @(posedge clk)
-	always @(negedge clk)
+	always @(posedge clk)
+//	always @(negedge clk)
 		nes_ce <= nes_ce + 2'b1;
 		
 	NES nes(
@@ -325,7 +323,7 @@ module NES_u16(
 		color,
 		joypad_strobe,
 		joypad_clock,
-		{joypad_bits2[0], joypad_bits[0]},
+		{joypad_bits2, joypad_bits},
 		5'b11111,	// enable all channels
 		memory_addr,
 		memory_read_cpu,
@@ -387,19 +385,6 @@ module NES_u16(
 
 	wire downloading;
 	
-	data_io data_io (
-		.sck		(spi1_clk),
-		.ss		(spi2_cs_n),
-		.sdi		(spi1_di),
-		.downloading	(downloading),
-		.size		(),
-		 // ram interface
-		.clk		(clk),
-		.wr		(loader_clk),
-		.a		(),
-		.d		(loader_input)
-	);
-
 	wire [14:0] 	doubler_pixel;
 	wire		doubler_sync;
 	wire [9:0]	vga_hcounter, doubler_x;

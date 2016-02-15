@@ -2,21 +2,76 @@
 <cof>
 	<eprom_name>EPCS64</eprom_name>
 	<flash_loader_device>EP4CE22</flash_loader_device>
-	<output_filename>output_file.jic</output_filename>
+	<output_filename>output_files/output_file.jic</output_filename>
 	<n_pages>1</n_pages>
 	<width>1</width>
 	<mode>7</mode>
 	<hex_block>
-		<hex_filename>C:/work/reverse/u16/fpga/nes/nes/rtl/loader/3.hex</hex_filename>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/battletoads.hex</hex_filename>
 		<hex_addressing>relative</hex_addressing>
-		<hex_offset>835584</hex_offset>
+		<hex_offset>0</hex_offset>
+	</hex_block>
+	<hex_block>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/BladesofSteel.hex</hex_filename>
+		<hex_addressing>relative</hex_addressing>
+		<hex_offset>0</hex_offset>
+	</hex_block>
+	<hex_block>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/PowBlad2.hex</hex_filename>
+		<hex_addressing>relative</hex_addressing>
+		<hex_offset>0</hex_offset>
+	</hex_block>
+	<hex_block>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/Puzznic.hex</hex_filename>
+		<hex_addressing>relative</hex_addressing>
+		<hex_offset>0</hex_offset>
+	</hex_block>
+	<hex_block>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/xevious.hex</hex_filename>
+		<hex_addressing>relative</hex_addressing>
+		<hex_offset>0</hex_offset>
+	</hex_block>
+	<hex_block>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/spelunker.hex</hex_filename>
+		<hex_addressing>relative</hex_addressing>
+		<hex_offset>0</hex_offset>
+	</hex_block>
+	<hex_block>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/bomberman.hex</hex_filename>
+		<hex_addressing>relative</hex_addressing>
+		<hex_offset>0</hex_offset>
+	</hex_block>
+	<hex_block>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/balloon_fight.hex</hex_filename>
+		<hex_addressing>relative</hex_addressing>
+		<hex_offset>0</hex_offset>
+	</hex_block>
+	<hex_block>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/Tank1990.hex</hex_filename>
+		<hex_addressing>relative</hex_addressing>
+		<hex_offset>0</hex_offset>
+	</hex_block>
+	<hex_block>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/super_mario_bros.hex</hex_filename>
+		<hex_addressing>relative</hex_addressing>
+		<hex_offset>0</hex_offset>
+	</hex_block>
+	<hex_block>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/lode_runner.hex</hex_filename>
+		<hex_addressing>relative</hex_addressing>
+		<hex_offset>0</hex_offset>
+	</hex_block>
+	<hex_block>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/gradius.hex</hex_filename>
+		<hex_addressing>relative</hex_addressing>
+		<hex_offset>0</hex_offset>
 	</hex_block>
 	<sof_data>
 		<start_address>00000000</start_address>
 		<user_name>Page_0</user_name>
 		<page_flags>1</page_flags>
 		<bit0>
-			<sof_filename>C:/work/reverse/u16/fpga/nes/nes/output_files/nes.sof</sof_filename> 
+			<sof_filename>F:/work/reverse/u16/fpga/nes/nes/output_files/nes.sof</sof_filename> 
 		</bit0>
 	</sof_data>
 	<version>7</version>

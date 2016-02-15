@@ -1,0 +1,27 @@
+BLOCK		START ADDRESS		END ADDRESS
+
+Page_0		0x00000000		0x000AF6E8
+gradius.hex		0x000AF6E9		0x000BF778
+lode_runner.hex		0x000BF779		0x000C5788
+super_mario_bros.hex		0x000C5789		0x000CF798
+Tank1990.hex		0x000CF799		0x000D97A8
+balloon_fight.hex		0x000D97A9		0x000DF7B8
+bomberman.hex		0x000DF7B9		0x000E57C8
+spelunker.hex		0x000E57C9		0x000EF7D8
+xevious.hex		0x000EF7D9		0x000F97E8
+Puzznic.hex		0x000F97E9		0x001197E8
+PowBlad2.hex		0x001197E9		0x001697E8
+BladesofSteel.hex		0x001697E9		0x001997E8
+battletoads.hex		0x001997E9		0x001E97E8
+
+
+Configuration device: EP4CE22
+Configuration mode: Active Serial
+Quad-Serial configuration device dummy clock cycle: 8
+
+
+Notes:
+
+- Data checksum for this conversion is 0x6A2A40BF
+
+- All the addresses in this file are byte addresses

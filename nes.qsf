@@ -143,7 +143,6 @@ set_global_assignment -name IGNORE_PARTITIONS OFF
 set_global_assignment -name OPTIMIZE_HOLD_TIMING "ALL PATHS"
 set_global_assignment -name OPTIMIZE_MULTI_CORNER_TIMING ON
 set_global_assignment -name FITTER_EFFORT "STANDARD FIT"
-set_global_assignment -name TIMEQUEST_DO_REPORT_TIMING ON
 set_global_assignment -name FLOW_ENABLE_POWER_ANALYZER ON
 set_global_assignment -name POWER_DEFAULT_INPUT_IO_TOGGLE_RATE "12.5 %"
 set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to SDRAM_DQ
@@ -152,8 +151,9 @@ set_global_assignment -name TIMEQUEST_MULTICORNER_ANALYSIS ON
 set_global_assignment -name SMART_RECOMPILE OFF
 set_location_assignment PIN_50 -to USB_SI
 set_location_assignment PIN_51 -to USB_NCS
+set_global_assignment -name TIMEQUEST_REPORT_SCRIPT_INCLUDE_DEFAULT_ANALYSIS ON
+set_global_assignment -name SDC_FILE output_files/nes_u16.sdc
 set_global_assignment -name VERILOG_FILE rtl/hdmi/hdmidirect.v
-set_global_assignment -name SDC_FILE nes_u16.sdc
 set_global_assignment -name VHDL_FILE rtl/cpu/nz80cpu.vhd
 set_global_assignment -name VHDL_FILE rtl/hdmi/serializer.vhd
 set_global_assignment -name QIP_FILE rtl/hdmi/serializer.qip
@@ -163,7 +163,6 @@ set_global_assignment -name VHDL_FILE rtl/spi/spi.vhd
 set_global_assignment -name VERILOG_FILE rtl/sigma_delta_dac.v
 set_global_assignment -name VERILOG_FILE rtl/sdram.v
 set_global_assignment -name VERILOG_FILE rtl/NES_u16.v
-set_global_assignment -name VERILOG_FILE rtl/data_io.v
 set_global_assignment -name VERILOG_FILE rtl/clk.v
 set_global_assignment -name QIP_FILE rtl/clk.qip
 set_global_assignment -name VERILOG_FILE src/vga.v
@@ -180,5 +179,10 @@ set_global_assignment -name QIP_FILE rtl/memory/ram.qip
 set_global_assignment -name CDF_FILE output_files/Chain.cdf
 set_global_assignment -name VHDL_FILE rtl/osd/osd.vhd
 set_global_assignment -name VHDL_FILE rtl/keyboard/hid.vhd
-set_global_assignment -name CDF_FILE Chain1.cdf
+set_global_assignment -name TIMEQUEST_DO_REPORT_TIMING ON
+set_global_assignment -name VERILOG_FILE src/mmc0.v
+set_global_assignment -name VERILOG_FILE src/mmc1.v
+set_global_assignment -name VERILOG_FILE src/mmc2.v
+set_global_assignment -name VERILOG_FILE src/mmc3.v
+set_global_assignment -name VERILOG_FILE src/mmc5.v
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

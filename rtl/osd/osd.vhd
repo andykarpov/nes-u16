@@ -1,4 +1,4 @@
--------------------------------------------------------------------[14.11.2015]
+-------------------------------------------------------------------[09.02.2016]
 -- OSD
 -------------------------------------------------------------------------------
 -- Engineer: 	MVV
@@ -30,19 +30,22 @@ port (
 	I_BLUE		: in std_logic_vector(4 downto 0);
 	I_HCNT		: in std_logic_vector(9 downto 0);
 	I_VCNT		: in std_logic_vector(9 downto 0);
+	I_DOWNLOAD_OK	: in std_logic;
 	O_RED		: out std_logic_vector(7 downto 0);
 	O_GREEN		: out std_logic_vector(7 downto 0);
 	O_BLUE		: out std_logic_vector(7 downto 0);
 	O_BUTTONS	: out std_logic_vector(1 downto 0);
 	O_SWITCHES	: out std_logic_vector(2 downto 0);
 	O_JOYPAD_KEYS	: out std_logic_vector(15 downto 0);
+	
 	O_SPI_CLK	: out std_logic;
-	O_SPI1_CLK	: out std_logic;
 	O_SPI_MOSI	: out std_logic;
-	O_SPI1_MOSI	: out std_logic;
 	O_SPI_CS_N	: out std_logic;	-- SPI FLASH
 	O_SPI1_CS_N	: out std_logic;	-- SD Card
-	O_SPI2_CS_N	: out std_logic);	-- data_io
+	
+	O_DOWNLOAD_DO	: out std_logic_vector(7 downto 0);
+	O_DOWNLOAD_WR	: out std_logic;
+	O_DOWNLOAD_ON	: out std_logic);
 end osd;
 
 architecture rtl of osd is
@@ -50,9 +53,6 @@ architecture rtl of osd is
 signal spi_busy		: std_logic;
 signal spi_do		: std_logic_vector(7 downto 0);
 signal spi_wr		: std_logic;
-signal spi1_busy	: std_logic;
-signal spi1_do		: std_logic_vector(7 downto 0);
-signal spi1_wr		: std_logic;
 signal cpu_di		: std_logic_vector(7 downto 0);
 signal cpu_do		: std_logic_vector(7 downto 0);
 signal cpu_addr		: std_logic_vector(15 downto 0);
@@ -88,7 +88,7 @@ begin
 u0: entity work.spi
 port map(
 	RESET		=> I_RESET,
-	CLK		=> I_CLK,
+	CLK		=> I_CLK_CPU,
 	SCK		=> I_CLK,
 	DI		=> cpu_do,
 	DO		=> spi_do,
@@ -127,19 +127,6 @@ port map(
 	q_a	 	=> ram_do,
 	q_b		=> osd_byte);
 
-u3: entity work.spi
-port map(
-	RESET		=> I_RESET,
-	CLK		=> I_CLK,
-	SCK		=> I_CLK,
-	DI		=> cpu_do,
-	DO		=> spi1_do,
-	WR		=> spi1_wr,
-	BUSY		=> spi1_busy,
-	SCLK		=> O_SPI1_CLK,
-	MOSI		=> O_SPI1_MOSI,
-	MISO		=> I_SPI1_MISO);
-
 -------------------------------------------------------------------------------
 -- CPU
 process (I_CLK, I_RESET, cpu_addr, cpu_iorq, cpu_wr)
@@ -163,8 +150,8 @@ end process;
 -- 02 - SPI0 STATUS
 -- 03 - BUTTONS
 -- 04 - DJOY1
--- 05 - SPI1 DATA I/O
--- 06 - SPI1 STATUS
+-- 05 - DOWNLOAD DATA/STATUS
+-- 06 - 
 -- 07 - SWITCHES W	KEY R
 -- 0F - DJOY2
 
@@ -172,8 +159,7 @@ cpu_di <=	ram_do when cpu_addr(15) = '0' and cpu_mreq = '1' and cpu_wr = '0' els
 		reg_0 when cpu_addr(7 downto 0) = X"00" and cpu_iorq = '1' and cpu_wr = '0' else
 		spi_do when cpu_addr(7 downto 0) = X"01" and cpu_iorq = '1' and cpu_wr = '0' else
 		spi_busy & "0000000" when cpu_addr(7 downto 0) = X"02" and cpu_iorq = '1' and cpu_wr = '0' else
-		spi1_do when cpu_addr(7 downto 0) = X"05" and cpu_iorq = '1' and cpu_wr = '0' else
-		spi1_busy & "0000000" when cpu_addr(7 downto 0) = X"06" and cpu_iorq = '1' and cpu_wr = '0' else
+		I_DOWNLOAD_OK & "0000000" when cpu_addr(7 downto 0) = X"05" and cpu_iorq = '1' and cpu_wr = '0' else
 		I_KEY0 when cpu_addr = X"0007" and cpu_iorq = '1' and cpu_wr = '0' else
 		I_KEY1 when cpu_addr = X"0107" and cpu_iorq = '1' and cpu_wr = '0' else
 		I_KEY2 when cpu_addr = X"0207" and cpu_iorq = '1' and cpu_wr = '0' else
@@ -185,7 +171,6 @@ cpu_di <=	ram_do when cpu_addr(15) = '0' and cpu_mreq = '1' and cpu_wr = '0' els
 
 ram_wr <= '1' when cpu_addr(15) = '0' and cpu_mreq = '1' and cpu_wr = '1' else '0';
 spi_wr <= '1' when cpu_addr(7 downto 0) = X"01" and cpu_iorq = '1' and cpu_wr = '1' else '0';
-spi1_wr <= '1' when cpu_addr(7 downto 0) = X"05" and cpu_iorq = '1' and cpu_wr = '1' else '0';
 
 -- INT
 process (I_CLK, cpu_iorq, m1, I_VCNT)
@@ -201,7 +186,10 @@ end process;
 
 O_SPI_CS_N  <= reg_0(0);
 O_SPI1_CS_N <= reg_0(1);
-O_SPI2_CS_N <= reg_0(2);
+
+O_DOWNLOAD_WR <= '1' when cpu_addr(7 downto 0) = X"05" and cpu_iorq = '1' and cpu_wr = '1' else '0';
+O_DOWNLOAD_ON <= not reg_0(2);
+O_DOWNLOAD_DO <= cpu_do;
 
 O_BUTTONS <= buttons;
 O_SWITCHES <= switches;

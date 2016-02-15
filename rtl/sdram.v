@@ -48,10 +48,10 @@ module sdram (
 );
 
 // no burst configured
-localparam RASCAS_DELAY   = 3'd2;   // tRCD=20ns -> 3 cycles@128MHz
+localparam RASCAS_DELAY   = 3'd3;   // tRCD=20ns -> 3 cycles@128MHz
 localparam BURST_LENGTH   = 3'b000; // 000=1, 001=2, 010=4, 011=8
 localparam ACCESS_TYPE    = 1'b0;   // 0=sequential, 1=interleaved
-localparam CAS_LATENCY    = 3'd2;   // 2/3 allowed
+localparam CAS_LATENCY    = 3'd3;   // 2/3 allowed
 localparam OP_MODE        = 2'b00;  // only 00 (standard operation) allowed
 localparam NO_WRITE_BURST = 1'b1;   // 0= write burst enabled, 1=only single access write
 

@@ -1,9 +1,9 @@
  		DEVICE	ZXSPECTRUM48
-; -----------------------------------------------------------------[08.01.2016]
+; -----------------------------------------------------------------[15.02.2016]
 ; ReVerSE-U16 NES Loader By MVV
 ; -----------------------------------------------------------------------------
-; 29.11.2014	РїРµСЂРІР°СЏ РІРµСЂСЃРёСЏ
-; 08.11.2015	OSD Р±СѓС„РµСЂ
+; 29.11.2014	первая версия
+; 08.11.2015	OSD буфер
 
 osd_buffer			equ #7800	; OSD buffer start address (2048 bytes length)
 osd_buffer_size			equ 2048
@@ -14,17 +14,14 @@ port_01				equ #01		; data spi port	w/r
 port_02				equ #02		; status spi port r
 port_03				equ #03		; buttons
 port_04				equ #04		; joy1
-port_05				equ #05		; data spi1 port w/r
-port_06				equ #06		; status spi1 port r
+port_05				equ #05		; data downloader port w/r
+port_06				equ #06		; --
 port_07				equ #07		; switches w, key0-6 r
 port_0f				equ #0f		; joy2
 
 sc_flash			equ %11111110
 sc_sd				equ %11111101
-cs_data_io			equ %11111011
-
-UIO_FILE_TX			equ #53
-UIO_FILE_TX_DAT			equ #54
+download_on			equ %11111011
 
 	org #0000
 startprog:
@@ -32,9 +29,9 @@ startprog:
 	ld sp,stack_top
 	ld d,0
 	call spi_end
-	call cls		; РѕС‡РёСЃС‚РєР° OSD Р±СѓС„РµСЂР°
+	call cls		; очистка OSD буфера
 	ld hl,str1
-	call print_str		; РїРµС‡Р°С‚СЊ РІ OSD Р±СѓС„РµСЂ
+	call print_str		; печать в OSD буфер
 inverse	
  	ld hl,osd_buffer
  	ld b,0
@@ -46,6 +43,11 @@ inverse1
  	djnz inverse1
 
 ; ID read
+	ld a,40		; x
+	ld (pos_x),a
+	ld a,6		; y
+	ld (pos_y),a
+
 	ld d,sc_flash
 	call spi_start
 	ld d,%10101011	; command ID read
@@ -54,6 +56,7 @@ inverse1
 	call spi_r
 	call spi_r
 	call spi_r
+
 	call print_hex
 	ld d,sc_flash
 	call spi_end
@@ -62,6 +65,7 @@ inverse1
 	db #11
 addr7	dw rom1
 	call rom_loader
+	call print_header
 key1
 	xor a
 	ld (joy1),a
@@ -71,14 +75,14 @@ key1
 key_loop
 	in a,(c)
 	; Switches
-	ld de,#023b
-	cp e			; [F1] OSD Menu
+	ld de,#024C
+	cp e			; Delete = HQ2X
 	jp z,key_switches
-	ld de,#013a
-	cp e			; [F2] HQ2X
+	ld de,#0149
+	cp e			; Insert = OSD Menu
 	jp z,key_switches
 	; Buttons
-	cp #3c			; [F3] Reset
+	cp #29			; Esc = Reset
 	ld d,%00000001
 	jp z,key_bottons
 
@@ -112,45 +116,45 @@ key_loop1
 	jr z,key_joy1
 key_loop2
 	; Joy 2 NES Data Format
-	cp #1e			; [1] A
+	cp #62			; [Keypad 0 Insert] A
 	ld d,%10000000
 	jr z,key_joy2
-	cp #1f			; [2] B
+	cp #59			; [Keypad 1 End] B
 	ld d,%01000000
 	jr z,key_joy2
-	cp #20			; [3] Select
+	cp #57			; [Keypad +] Select
 	ld d,%00100000
 	jr z,key_joy2
-	cp #21			; [4] Start
+	cp #58			; [Keypad Enter] Start
 	ld d,%00010000
 	jr z,key_joy2
-	cp #60			; [8] Up
+	cp #60			; [Keypad 8 Up] Up
 	ld d,%00001000
 	jr z,key_joy2
-	cp #5d			; [2] Down
+	cp #5d			; [Keypad 5] Down
 	ld d,%00000100
 	jr z,key_joy2
-	cp #5c			; [4] Left
+	cp #5c			; [Keypad 4 Left] Left
 	ld d,%00000010
 	jr z,key_joy2
-	cp #5e			; [6] Right
+	cp #5e			; [Keypad 6 Right] Right
 	ld d,%00000001
 	jr z,key_joy2
 key_loop3
 	djnz key_loop
-	db #3e			; ld a,n РІРјРµСЃС‚Рѕ ld a,(joy1)
+	db #3e			; ld a,n вместо ld a,(joy1)
 joy1	db #00
 	out (port_04),a
-	db #3e			; ld a,n РІРјРµСЃС‚Рѕ ld a,(joy2)
+	db #3e			; ld a,n вместо ld a,(joy2)
 joy2	db #00
 	out (port_0f),a
-	db #3e			; ld a,n РІРјРµСЃС‚Рѕ ld a,(buttons)
+	db #3e			; ld a,n вместо ld a,(buttons)
 buttons	db #00	
 	out (port_03),a
 	jp key1
 key_switches	
 	ex af,af'
-	db #3e			; ld a,n РІРјРµСЃС‚Рѕ ld a,(switches)
+	db #3e			; ld a,n вместо ld a,(switches)
 switches
 	db #00
 	xor d
@@ -186,13 +190,40 @@ key_joy2
 
 keytest
 	ld de,rom1
-	cp #3e			; F5
+	cp #3a			; F1
 	jp z,rom_loader
 	ld de,rom2
-	cp #3f			; F6
+	cp #3b			; F2
 	jp z,rom_loader
 	ld de,rom3
+	cp #3c			; F3
+	jp z,rom_loader
+	ld de,rom4
+	cp #3d			; F4
+	jp z,rom_loader
+	ld de,rom5
+	cp #3e			; F5
+	jp z,rom_loader
+	ld de,rom6
+	cp #3f			; F6
+	jp z,rom_loader
+	ld de,rom7
 	cp #40			; F7
+	jp z,rom_loader
+	ld de,rom8
+	cp #41			; F8
+	jp z,rom_loader
+	ld de,rom9
+	cp #42			; F9
+	jp z,rom_loader
+	ld de,rom10
+	cp #43			; F10
+	jp z,rom_loader
+	ld de,rom11
+	cp #44			; F11
+	jp z,rom_loader
+	ld de,rom12
+	cp #45			; F12
 	jp z,rom_loader
 	jp key_loop1
 ; -----------------------------------------------------------------------------	
@@ -207,7 +238,7 @@ keytest
 ; 	bit 7	= 1:BUSY	(Currently transmitting data)
 ;	bit 6-0	= Reserved
 spi_start
-	db #3e			; ld a,n РІРјРµСЃС‚Рѕ ld a,(spi_sc)
+	db #3e			; ld a,n вместо ld a,(spi_sc)
 spi_sc	db #ff
 	and d
 	out (port_00),a		; CS
@@ -238,35 +269,6 @@ spi_r1
 	rlca
 	jr c,spi_r1
 	in a,(port_01)		; Data Buffer
-	ret
-
-; -----------------------------------------------------------------------------	
-; SPI 
-; -----------------------------------------------------------------------------
-; Ports:
-
-; Data Buffer (write/read)
-;	bit 7-0	= Stores SPI read/write data
-
-; Status Register (read):
-; 	bit 7	= 1:BUSY	(Currently transmitting data)
-;	bit 6-0	= Reserved
-spi1_w
-	in a,(port_06)		; Status Register
-	rlca
-	jr c,spi1_w
-	ld a,d
-	out (port_05),a		; Data Buffer
-	ret
-spi1_r
-	ld d,#ff
-spi1_wr
-	call spi1_w
-spi1_r1	
-	in a,(port_06)		; Status Register
-	rlca
-	jr c,spi1_r1
-	in a,(port_05)		; Data Buffer
 	ret
 
 ; -----------------------------------------------------------------------------
@@ -333,12 +335,12 @@ print_char
 	cp 13
 	jr z,pchar2
 	sub 32
-	ld c,a			; РІСЂРµРјРµРЅРЅРѕ СЃРѕС…СЂР°РЅРёС‚СЊ РІ СЃ
-	db #3e			; ld a,n РІРјРµСЃС‚Рѕ ld a,(pos_y)
+	ld c,a			; временно сохранить в с
+	db #3e			; ld a,n вместо ld a,(pos_y)
 pos_y	db #00
 	add a,high osd_buffer	; osd_buffer
 	ld d,a
-	db #3e			; ld a,n РІРјРµСЃС‚Рѕ ld a,(pos_x)
+	db #3e			; ld a,n вместо ld a,(pos_x)
 pos_x	db #00
 	ld e,a
 	add a,e
@@ -347,7 +349,7 @@ pos_x	db #00
 	add a,e
 	add a,e
 	add a,2
-	ld e,a			; de=Р°РґСЂРµСЃ РїРµС‡Р°С‚Рё РІ osd_buffer
+	ld e,a			; de=адрес печати в osd_buffer
 	ld h,0
 	ld l,c
 	add hl,hl
@@ -386,14 +388,14 @@ pchar1
 ; print hexadecimal i: a - 8 bit number
 ; -----------------------------------------------------------------------------
 print_hex
-	ld b,a
+	ld c,a
 	and $f0
 	rrca
 	rrca
 	rrca
 	rrca
 	call hex2
-	ld a,b
+	ld a,c
 	and $0f
 hex2
 	cp 10
@@ -466,7 +468,7 @@ dectb_w
 ; -----------------------------------------------------------------------------
 rom_loader
 	ld (addr7),de
-	ld a,(de)	; start address
+	ld a,(de)		; start address
 	ld (addr1),a
 	inc de
 	ld a,(de)
@@ -474,9 +476,8 @@ rom_loader
 	inc de
 	ld a,(de)
 	ld (addr3),a
-
 	inc de
-	ld a,(de)	; end address
+	ld a,(de)		; end address
 	ld (addr4),a
 	inc de
 	ld a,(de)
@@ -487,24 +488,14 @@ rom_loader
 
 ; SPI loader
 ; -----------------------------------------------------------------------------
-	ld d,cs_data_io
+	ld d,download_on
 	call spi_start
-	ld d,UIO_FILE_TX
-	call spi1_w
-	ld d,#ff
-	call spi1_w
-	ld d,cs_data_io
-	call spi_end
-	ld d,cs_data_io
-	call spi_start
-	ld d,UIO_FILE_TX_DAT
-	call spi1_w
 	ld d,sc_flash
 	call spi_start
-	ld d,%00000011	; command = read
+	ld d,#03		; command = read
 	call spi_w
 	;ld d,n
-	db #16		; address
+	db #16			; set address
 addr1	db #00
 	ld e,d
 	call spi_w
@@ -516,13 +507,46 @@ addr2	db #00
 addr3	db #00
 	ld l,d
 	call spi_w
-spi_loader1
- 	call spi_r
- 	ld d,a
- 	call spi1_w
- 	
+	
+; checksum = #000000
+	xor a
+	ld (checksum_32),a
+	ld (checksum_24),a
+	ld (checksum_16),a
+	ld (checksum_08),a
+	ld (header_cnt),a
+	ld ix,header
 
- 	ld bc,#0001
+spi_loader1
+ 	call spi_r		; a <= spiflash byte
+ 	out (port_05),a		; a => sdram
+ 
+; checksum 32bit
+	ld c,a
+	ld b,#00
+	ld a,(checksum_08)
+	add a,c
+	ld (checksum_08),a
+	ld a,(checksum_16)
+	adc a,b
+	ld (checksum_16),a
+	ld a,(checksum_24)
+	adc a,b
+	ld (checksum_24),a
+	ld a,(checksum_32)
+	adc a,b
+	ld (checksum_32),a
+
+ 	ld a,(header_cnt)	; =0? End
+	cp 8
+ 	jr nc,loop2
+	inc a
+ 	ld (header_cnt),a
+	ld (ix+0),c		; c => (header)
+	inc ix
+;-----------	
+
+loop2 	ld c,#01
  	add hl,bc
  	ld a,e
  	adc a,b
@@ -540,51 +564,113 @@ addr5	db #00
 addr6	db #00
  	cp l
  	jr nz,spi_loader1
- 
-	ld d,cs_data_io
+;-----------	
+
+; 	in a,(port_05)
+; 	rlca
+; 	jr nc,spi_loader1
+
+	ld d,download_on
 	call spi_end
 	ld d,sc_flash
 	call spi_end
 
-	ld d,cs_data_io
-	call spi_start
-	ld d,UIO_FILE_TX
-	call spi1_w
-	ld d,#00
-	call spi1_w
-	ld d,cs_data_io
-	call spi_end
+	ld a,34			; x
+	ld (pos_x),a
+	ld a,7			; y
+	ld (pos_y),a
+	ld a,(checksum_32)
+	call print_hex
+	ld a,(checksum_24)
+	call print_hex
+	ld a,(checksum_16)
+	call print_hex
+	ld a,(checksum_08)
+	call print_hex
+	ret
+;----------------------------------
+print_header
+	ld a,4			; x
+	ld (pos_x),a
+	ld a,7			; y
+	ld (pos_y),a
+	ld ix,header
+	ld a,(ix+4)
+	call print_hex
+	ld a,11			;x
+	ld (pos_x),a
+	ld a,(ix+5)
+	call print_hex
+	ld a,21			;x
+	ld (pos_x),a
+	ld a,(ix+6)
+	and %11110000
+	rrca
+	rrca
+	rrca
+	rrca
+	ld c,a
+	ld a,(ix+7)
+	and %11110000
+	or c
+	call print_hex
 	ret
 
 ; -----------------------------------------------------------------------------
-; СѓРїСЂР°РІР»СЏСЋС‰РёРµ РєРѕРґС‹
-; 13 (0x0d)		- СЃР»РµРґ СЃС‚СЂРѕРєР°
-; 23 (0x17),x,y		- РёР·РјРµРЅРёС‚СЊ РїРѕР·РёС†РёСЋ РЅР° РєРѕРѕСЂРґРёРЅР°С‚С‹ x,y
-; 24 (0x18),x		- РёР·РјРµРЅРёС‚СЊ РїРѕР·РёС†РёСЋ РїРѕ x
-; 25 (0x19),y		- РёР·РјРµРЅРёС‚СЊ РїРѕР·РёС†РёСЋ РїРѕ y
-; 0			- РєРѕРЅРµС† СЃС‚СЂРѕРєРё
+; управляющие коды
+; 13 (0x0d)		- след строка
+; 23 (0x17),x,y		- изменить позицию на координаты x,y
+; 24 (0x18),x		- изменить позицию по x
+; 25 (0x19),y		- изменить позицию по y
+; 0			- конец строки
 
 ; x(0-41),y(0-7)
+;		   "------------------------------------------"
+str1		db 23,0,0
+		db "[NES] (build 20160215) By MVV",13
+		db "Reset[Esc] OSD[Ins] HQ2x[Del] ROM[F1..F12]"
+		db "DJOY1: use arrow keys for D-Pad",23,7,3
+		db "A[A] B[S] Sel[Space] Start[Enter]",13
+		db "DJOY2: use numpad keys for D-Pad",23,7,5
+		db "A[1] B[2] Sel[3] Start[4]",13
+		db "Board:ReVerSE-U16c FPGA:EP4CE22 FlashID:",13
+		db "PRG:",24,7,"CHR:",24,14,"Mapper:",24,25,"Checksum:",0
 
-str1	
-;	   "------------------------------------------"
-	db 23,0,0
-	db "[NES] ReVerSE-U16c (build 20160108) By MVV"
-	db "F1: OSD; F2: hq2x; F3: Reset; F4: Load ROM"
-	db "DJOY1: use arrow keys for D-Pad",13
-	db "A=A B=S Sel=Space Start=Enter",13
-	db "DJOY2: use numpad keys for D-Pad",13
-	db "A=1 B=2 Sel=3 Start=4",13
-	db "F5=Gradius; F6=1942; F7=Super Mario Bros",13
-	db "FLASH ID:",0
+;BLOCK			START ADDRESS	END ADDRESS
+;Page_0			0x00000000	0x000AF6E8
+;gradius.hex		0x000AF6E9	0x000BF778
+;lode_runner.hex	0x000BF779	0x000C5788
+;super_mario_bros.hex	0x000C5789	0x000CF798
+;Tank1990.hex		0x000CF799	0x000D97A8
+;balloon_fight.hex	0x000D97A9	0x000DF7B8
+;bomberman.hex		0x000DF7B9	0x000E57C8
+;spelunker.hex		0x000E57C9	0x000EF7D8
+;xevious.hex		0x000EF7D9	0x000F97E8
+;Puzznic.hex		0x000F97E9	0x001197E8
+;PowBlad2.hex		0x001197E9	0x001697E8
+;BladesofSteel.hex	0x001697E9	0x001997E8
+;battletoads.hex	0x001997E9	0x001E97E8
 
-rom1	db #0c,#c0,#00	; address 0cc000 Gradius
-;	db #01,#00,#90	; length  010090
-rom2	db #0d,#c0,#90	; address 0dc090 1942
-;	db #00,#a0,#10	; length  00a010
-rom3	db #0e,#60,#a0	; address 0e60a0 Super Mario Bros
-;	db #00,#a0,#10	; length  00a010
-	db #0f,#00,#b0
+rom1		db #0A,#F6,#E9 
+rom2		db #0B,#F7,#79
+rom3		db #0C,#57,#89
+rom4		db #0C,#F7,#99
+rom5		db #0D,#97,#A9
+rom6		db #0D,#F7,#B9
+rom7		db #0E,#57,#C9
+rom8		db #0E,#F7,#D9
+rom9		db #0F,#97,#E9
+rom10		db #11,#97,#E9
+rom11		db #16,#97,#E9
+rom12		db #19,#97,#E9
+		db #1E,#97,#E9	;End
+
+checksum_32	db #00
+checksum_24	db #00
+checksum_16	db #00
+checksum_08	db #00
+
+header_cnt	db #00
 
 ; -----------------------------------------------------------------------------
 
@@ -592,6 +678,8 @@ rom3	db #0e,#60,#a0	; address 0e60a0 Super Mario Bros
 
 font	INCBIN "font.bin"
 
+header		db #0000,#0000,#0000,#0000
+	
 	savebin "loader.bin",startprog, 32768
 
 	display "osd_buffer start = ",/a, osd_buffer
