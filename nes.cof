@@ -2,67 +2,67 @@
 <cof>
 	<eprom_name>EPCS64</eprom_name>
 	<flash_loader_device>EP4CE22</flash_loader_device>
-	<output_filename>output_files/output_file.jic</output_filename>
+	<output_filename>output_file.jic</output_filename>
 	<n_pages>1</n_pages>
 	<width>1</width>
 	<mode>7</mode>
 	<hex_block>
-		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/battletoads.hex</hex_filename>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/games/Prince_of_Persia_(U).hex</hex_filename>
 		<hex_addressing>relative</hex_addressing>
 		<hex_offset>0</hex_offset>
 	</hex_block>
 	<hex_block>
-		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/BladesofSteel.hex</hex_filename>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/games/battletoads.hex</hex_filename>
 		<hex_addressing>relative</hex_addressing>
 		<hex_offset>0</hex_offset>
 	</hex_block>
 	<hex_block>
-		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/PowBlad2.hex</hex_filename>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/games/Tiny_Toon_Adventures_(U).hex</hex_filename>
 		<hex_addressing>relative</hex_addressing>
 		<hex_offset>0</hex_offset>
 	</hex_block>
 	<hex_block>
-		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/Puzznic.hex</hex_filename>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/games/Teenage_Mutant_Ninja_Turtles_III_-_The_Manhattan_Project_(U).hex</hex_filename>
 		<hex_addressing>relative</hex_addressing>
 		<hex_offset>0</hex_offset>
 	</hex_block>
 	<hex_block>
-		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/xevious.hex</hex_filename>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/games/Castlevania_III.hex</hex_filename>
 		<hex_addressing>relative</hex_addressing>
 		<hex_offset>0</hex_offset>
 	</hex_block>
 	<hex_block>
-		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/spelunker.hex</hex_filename>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/games/Darkwing_Duck_(U).hex</hex_filename>
 		<hex_addressing>relative</hex_addressing>
 		<hex_offset>0</hex_offset>
 	</hex_block>
 	<hex_block>
-		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/bomberman.hex</hex_filename>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/games/Lode_Runner_(U).hex</hex_filename>
 		<hex_addressing>relative</hex_addressing>
 		<hex_offset>0</hex_offset>
 	</hex_block>
 	<hex_block>
-		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/balloon_fight.hex</hex_filename>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/games/Contra_(U)_[!].hex</hex_filename>
 		<hex_addressing>relative</hex_addressing>
 		<hex_offset>0</hex_offset>
 	</hex_block>
 	<hex_block>
-		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/Tank1990.hex</hex_filename>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/games/Chip_'n_Dale_Rescue_Rangers_(U)_[!].hex</hex_filename>
 		<hex_addressing>relative</hex_addressing>
 		<hex_offset>0</hex_offset>
 	</hex_block>
 	<hex_block>
-		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/super_mario_bros.hex</hex_filename>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/games/Tank1990.hex</hex_filename>
 		<hex_addressing>relative</hex_addressing>
 		<hex_offset>0</hex_offset>
 	</hex_block>
 	<hex_block>
-		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/lode_runner.hex</hex_filename>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/games/Gradius.hex</hex_filename>
 		<hex_addressing>relative</hex_addressing>
 		<hex_offset>0</hex_offset>
 	</hex_block>
 	<hex_block>
-		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/gradius.hex</hex_filename>
+		<hex_filename>F:/work/reverse/u16/fpga/nes/nes/rtl/loader/games/Super_Mario_Bros._(E).hex</hex_filename>
 		<hex_addressing>relative</hex_addressing>
 		<hex_offset>0</hex_offset>
 	</hex_block>

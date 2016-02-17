@@ -1,5 +1,5 @@
  		DEVICE	ZXSPECTRUM48
-; -----------------------------------------------------------------[15.02.2016]
+; -----------------------------------------------------------------[17.02.2016]
 ; ReVerSE-U16 NES Loader By MVV
 ; -----------------------------------------------------------------------------
 ; 29.11.2014	первая версия
@@ -627,7 +627,7 @@ print_header
 ; x(0-41),y(0-7)
 ;		   "------------------------------------------"
 str1		db 23,0,0
-		db "[NES] (build 20160215) By MVV",13
+		db "[NES] (build 20160217) By MVV",13
 		db "Reset[Esc] OSD[Ins] HQ2x[Del] ROM[F1..F12]"
 		db "DJOY1: use arrow keys for D-Pad",23,7,3
 		db "A[A] B[S] Sel[Space] Start[Enter]",13
@@ -636,34 +636,34 @@ str1		db 23,0,0
 		db "Board:ReVerSE-U16c FPGA:EP4CE22 FlashID:",13
 		db "PRG:",24,7,"CHR:",24,14,"Mapper:",24,25,"Checksum:",0
 
-;BLOCK			START ADDRESS	END ADDRESS
-;Page_0			0x00000000	0x000AF6E8
-;gradius.hex		0x000AF6E9	0x000BF778
-;lode_runner.hex	0x000BF779	0x000C5788
-;super_mario_bros.hex	0x000C5789	0x000CF798
-;Tank1990.hex		0x000CF799	0x000D97A8
-;balloon_fight.hex	0x000D97A9	0x000DF7B8
-;bomberman.hex		0x000DF7B9	0x000E57C8
-;spelunker.hex		0x000E57C9	0x000EF7D8
-;xevious.hex		0x000EF7D9	0x000F97E8
-;Puzznic.hex		0x000F97E9	0x001197E8
-;PowBlad2.hex		0x001197E9	0x001697E8
-;BladesofSteel.hex	0x001697E9	0x001997E8
-;battletoads.hex	0x001997E9	0x001E97E8
+;BLOCK					START ADDRESS	END ADDRESS
+;Page_0					0x00000000	0x000AF6E8
+;Super_Mario_Bros.hex			0x000AF6E9	0x000B96F8
+;Gradius.hex				0x000B96F9	0x000C9708
+;Tank1990.hex				0x000C9709	0x000D3718
+;Chip_'n_Dale_Rescue_Rangers.hex	0x000D3719	0x00113728
+;Contra.hex				0x00113729	0x00133738
+;Lode_Runner.hex			0x00133739	0x00139748
+;Darkwing_Duck.hex			0x00139749	0x00179758
+;Castlevania_III.hex			0x00179759	0x001D9768
+;Teenage_Mutant_Ninja_Turtles_III.hex	0x001D9769	0x00259778
+;Tiny_Toon_Adventures.hex		0x00259779	0x00299788
+;battletoads.hex			0x00299789	0x002D9798
+;Prince_of_Persia.hex			0x002D9799	0x002F97A8
 
 rom1		db #0A,#F6,#E9 
-rom2		db #0B,#F7,#79
-rom3		db #0C,#57,#89
-rom4		db #0C,#F7,#99
-rom5		db #0D,#97,#A9
-rom6		db #0D,#F7,#B9
-rom7		db #0E,#57,#C9
-rom8		db #0E,#F7,#D9
-rom9		db #0F,#97,#E9
-rom10		db #11,#97,#E9
-rom11		db #16,#97,#E9
-rom12		db #19,#97,#E9
-		db #1E,#97,#E9	;End
+rom2		db #0B,#96,#F9
+rom3		db #0C,#97,#09
+rom4		db #0D,#37,#19
+rom5		db #11,#37,#29
+rom6		db #13,#37,#39
+rom7		db #13,#97,#49
+rom8		db #17,#97,#59
+rom9		db #1D,#97,#69
+rom10		db #25,#97,#79
+rom11		db #29,#97,#89
+rom12		db #2D,#97,#99
+		db #2F,#97,#A9	;End
 
 checksum_32	db #00
 checksum_24	db #00

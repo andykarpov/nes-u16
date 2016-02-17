@@ -1,4 +1,4 @@
--------------------------------------------------------------------[10.02.2016]
+-------------------------------------------------------------------[17.02.2016]
 -- USB HID
 -------------------------------------------------------------------------------
 -- Engineer:	MVV
@@ -46,6 +46,7 @@ signal key3		: std_logic_vector(7 downto 0);
 signal key4		: std_logic_vector(7 downto 0);
 signal key5		: std_logic_vector(7 downto 0);
 signal key6		: std_logic_vector(7 downto 0);
+signal joy_data		: std_logic_vector(15 downto 0);
 
 begin
 
@@ -120,17 +121,26 @@ O_KEY6 <= key6;
 		end if;
 	end process;
 
-	process (cnt1, I_JOYPAD_KEYS)
+	process (I_JOYPAD_LATCH)
+	begin
+		if (I_JOYPAD_LATCH'event and I_JOYPAD_LATCH = '1') then
+			joy_data <= I_JOYPAD_KEYS;
+		end if;
+	end process;
+	
+	
+	
+	process (cnt1, joy_data)
 	begin
 		case cnt1 is
-			when "111" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(0);	-- Right
-			when "110" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(1);	-- Left
-			when "101" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(2);	-- Down
-			when "100" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(3);	-- Up
-			when "011" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(4);	-- Start
-			when "010" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(5);	-- Select
-			when "001" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(6);	-- B
-			when "000" => O_JOYPAD_DATA1 <= I_JOYPAD_KEYS(7);	-- A
+			when "111" => O_JOYPAD_DATA1 <= joy_data(0);	-- Right
+			when "110" => O_JOYPAD_DATA1 <= joy_data(1);	-- Left
+			when "101" => O_JOYPAD_DATA1 <= joy_data(2);	-- Down
+			when "100" => O_JOYPAD_DATA1 <= joy_data(3);	-- Up
+			when "011" => O_JOYPAD_DATA1 <= joy_data(4);	-- Start
+			when "010" => O_JOYPAD_DATA1 <= joy_data(5);	-- Select
+			when "001" => O_JOYPAD_DATA1 <= joy_data(6);	-- B
+			when "000" => O_JOYPAD_DATA1 <= joy_data(7);	-- A
 			when others => null;
 		end case;
 	end process;
@@ -144,17 +154,17 @@ O_KEY6 <= key6;
 		end if;
 	end process;
 
-	process (cnt2, I_JOYPAD_KEYS)
+	process (cnt2, joy_data)
 	begin
 		case cnt2 is
-			when "111" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(8);	-- Right
-			when "110" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(9);	-- Left
-			when "101" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(10);	-- Down
-			when "100" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(11);	-- Up
-			when "011" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(12);	-- Start
-			when "010" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(13);	-- Select
-			when "001" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(14);	-- B
-			when "000" => O_JOYPAD_DATA2 <= I_JOYPAD_KEYS(15);	-- A
+			when "111" => O_JOYPAD_DATA2 <= joy_data(8);	-- Right
+			when "110" => O_JOYPAD_DATA2 <= joy_data(9);	-- Left
+			when "101" => O_JOYPAD_DATA2 <= joy_data(10);	-- Down
+			when "100" => O_JOYPAD_DATA2 <= joy_data(11);	-- Up
+			when "011" => O_JOYPAD_DATA2 <= joy_data(12);	-- Start
+			when "010" => O_JOYPAD_DATA2 <= joy_data(13);	-- Select
+			when "001" => O_JOYPAD_DATA2 <= joy_data(14);	-- B
+			when "000" => O_JOYPAD_DATA2 <= joy_data(15);	-- A
 			when others => null;
 		end case;
 	end process;

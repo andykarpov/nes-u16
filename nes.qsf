@@ -152,6 +152,7 @@ set_global_assignment -name SMART_RECOMPILE OFF
 set_location_assignment PIN_50 -to USB_SI
 set_location_assignment PIN_51 -to USB_NCS
 set_global_assignment -name TIMEQUEST_REPORT_SCRIPT_INCLUDE_DEFAULT_ANALYSIS ON
+set_global_assignment -name TIMEQUEST_DO_REPORT_TIMING ON
 set_global_assignment -name SDC_FILE output_files/nes_u16.sdc
 set_global_assignment -name VERILOG_FILE rtl/hdmi/hdmidirect.v
 set_global_assignment -name VHDL_FILE rtl/cpu/nz80cpu.vhd
@@ -179,10 +180,4 @@ set_global_assignment -name QIP_FILE rtl/memory/ram.qip
 set_global_assignment -name CDF_FILE output_files/Chain.cdf
 set_global_assignment -name VHDL_FILE rtl/osd/osd.vhd
 set_global_assignment -name VHDL_FILE rtl/keyboard/hid.vhd
-set_global_assignment -name TIMEQUEST_DO_REPORT_TIMING ON
-set_global_assignment -name VERILOG_FILE src/mmc0.v
-set_global_assignment -name VERILOG_FILE src/mmc1.v
-set_global_assignment -name VERILOG_FILE src/mmc2.v
-set_global_assignment -name VERILOG_FILE src/mmc3.v
-set_global_assignment -name VERILOG_FILE src/mmc5.v
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
