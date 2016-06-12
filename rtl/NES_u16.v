@@ -86,38 +86,44 @@ endmodule
 
 
 module NES_u16(	
+
 	// clock input
-	input		CLOCK_50, // 50 MHz
-	input		KEY_RESET,
+	input		CLK_50MHZ, // 50 MHz
+	input       USB_NRESET,
+
 	// HDMI
 	output		HDMI_D0,
 	output		HDMI_D1, HDMI_D1N,
 	output		HDMI_D2,
 	output		HDMI_CLK,
+	
 	// USB HOST	
 	input		USB_TX,
 	input		USB_SI,
 	output		USB_NCS,
+
 	// SPI FLASH
-	output		SPI_DI,
-	input		SPI_DO,
-	output		SPI_SCK,
-	output		SPI_CSn,
-	// SDRAM																																																																												 
-	inout  [ 15:0]	SDRAM_DQ,	// SDRAM Data bus 16 Bits																																																				
-	output [ 12:0]	SDRAM_A,	// SDRAM Address bus 13 Bits																																																			
-	output		SDRAM_DQML,	// SDRAM Low-byte Data Mask																																																		
-	output		SDRAM_DQMH,	// SDRAM High-byte Data Mask																																																	 
-	output		SDRAM_nWE,	// SDRAM Write Enable																																																					 
-	output		SDRAM_nCAS,	// SDRAM Column Address Strobe																																																 
-	output		SDRAM_nRAS,	// SDRAM Row Address Strobe																																																		
-	output [ 1:0]	SDRAM_BA,	// SDRAM Bank Address																																																						
-	output		SDRAM_CLK,	// SDRAM Clock																																																									
+	output		ASDO, //SPI_DI
+	input		DATA0, //SPI_DO
+	output		DCLK, //SPI_SCK
+	output		NCSO, //SPI_CSn
+	
+	// SDRAM				 
+	inout  [ 15:0]	SDRAM_DQ,	// SDRAM Data bus 16 Bits											
+	output [ 12:0]	SDRAM_A,	// SDRAM Address bus 13 Bits										
+	output		SDRAM_DQML,	// SDRAM Low-byte Data Mask												
+	output		SDRAM_DQMH,	// SDRAM High-byte Data Mask											
+	output		SDRAM_NWE,	// SDRAM Write Enable													
+	output		SDRAM_NCAS,	// SDRAM Column Address Strobe											
+	output		SDRAM_NRAS,	// SDRAM Row Address Strobe												
+	output [ 1:0]	SDRAM_BA,	// SDRAM Bank Address												
+	output		SDRAM_CLK,	// SDRAM Clock															
+
 	// audio
-	output		AUDIO_L,
-	output		AUDIO_R
+	output		DN,
+	output		DP
 );
- 
+
 	// VGA
 	wire [7:0]	vga_red;
 	wire [7:0]	vga_green;	
@@ -140,27 +146,22 @@ module NES_u16(
 	wire nes_hs;
 	wire nes_vs;
 
-	hdmidirect tmds(
-		.pixclk		(clk),
-		.pixclk72	(clk_dvi),
-		.red		(vga_red),
-		.green		(vga_green),
-		.blue		(vga_blue),
-		.hSync		(nes_hs),
-		.vSync		(nes_vs),
-		.CounterX	(vga_hcounter),
-		.CounterY	(vga_vcounter),
-		.DrawArea	(blank),
-		.SampleL	({sample[15:8],4'b0000}),
-		.SampleR	({sample[15:8],4'b0000}),
-		.tmds_d		(tmds_d)
+	av_hdmi tmds(
+		.I_CLK_PIXEL(clk), // 21
+		.I_CLK_PIXEL_x5(clk_dvi), // 105
+		.I_R(vga_red),
+		.I_G(vga_green),
+		.I_B(vga_blue),
+		.I_BLANK(blank), 
+		.I_HSYNC(nes_hs),
+		.I_VSYNC(nes_vs),
+		.I_AUDIO_PCM_L(sample),
+		.I_AUDIO_PCM_R(sample),
+		.O_TMDS_D0(HDMI_D0),
+		.O_TMDS_D1(HDMI_D1),
+		.O_TMDS_D2(HDMI_D2),
+		.O_TMDS_CLK(HDMI_CLK)
 	);
-	
-	
-	assign HDMI_D0 = tmds_d[0];
-	assign HDMI_D1 = tmds_d[1];
-	assign HDMI_D2 = tmds_d[2];
-	assign HDMI_CLK = clk;
 	
 	wire blank;
 	assign HDMI_D1N = 1'b0;
@@ -168,7 +169,7 @@ module NES_u16(
 
 	// =======================================================
 	osd cocpu(
-		.I_RESET	(!KEY_RESET),
+		.I_RESET	(!USB_NRESET),
 		.I_CLK		(clk42),	// 42MHz
 		.I_CLK_CPU	(clk),		// 21MHz
 		.I_KEY0		(key0),
@@ -178,7 +179,7 @@ module NES_u16(
 		.I_KEY4		(key4),
 		.I_KEY5		(key5),
 		.I_KEY6		(key6),
-		.I_SPI_MISO	(SPI_DO),
+		.I_SPI_MISO	(DATA0),
 		.I_SPI1_MISO	(spi1_do),
 		.I_RED		(nes_r),
 		.I_GREEN	(nes_g),
@@ -192,9 +193,9 @@ module NES_u16(
 		.O_BUTTONS	(buttons),
 		.O_SWITCHES	(switches),
 		.O_JOYPAD_KEYS	(joypad_keys),
-		.O_SPI_CLK	(SPI_SCK),
-		.O_SPI_MOSI	(SPI_DI),
-		.O_SPI_CS_N	(SPI_CSn),	// SPI FLASH
+		.O_SPI_CLK	(DCLK),
+		.O_SPI_MOSI	(ASDO),
+		.O_SPI_CS_N	(NCSO),	// SPI FLASH
 		.O_SPI1_CS_N	(),		// SD Card
 		.O_DOWNLOAD_DO	(loader_input),
 		.O_DOWNLOAD_WR	(loader_clk),
@@ -211,8 +212,8 @@ module NES_u16(
 	wire [7:0] key6;
 		
 	hid hid(
-		.I_CLK		(CLOCK_50),
-		.I_RESET	(!KEY_RESET),
+		.I_CLK		(CLK_50MHZ),
+		.I_RESET	(!USB_NRESET),
 		.I_RX		(USB_TX),
 		.I_NEWFRAME	(USB_SI),
 		.I_JOYPAD_KEYS	(joypad_keys),
@@ -241,16 +242,16 @@ module NES_u16(
 	assign SDRAM_CLK = clk_sdram;
 	
 	clk clock_21mhz(
-		.inclk0		(CLOCK_50),
-		.c0		(clk_sdram),
-		.c1		(clk_dvi),
-		.c2		(clk),
-		.c3		(clk42),
+		.inclk0		(CLK_50MHZ),
+		.c0		(clk_sdram), // 84
+		.c1		(clk_dvi),	// 105
+		.c2		(clk), // 21
+		.c3		(clk42), // 42
 		.locked		(clock_locked));
 
 	// hold machine in reset until first download starts
 	reg init_reset;
-	always @(posedge CLOCK_50) begin
+	always @(posedge CLK_50MHZ) begin
 	if(!clock_locked)
 		init_reset <= 1'b1;
 	else if(downloading)
@@ -305,7 +306,7 @@ module NES_u16(
 
 //TH	wire reset_nes = (buttons[1] || !loader_done);
 //	wire reset_nes = (init_reset || buttons[1] || status[0] || status[4] || downloading);
-	wire reset_nes = (init_reset || buttons[0] || !KEY_RESET || downloading);
+	wire reset_nes = (init_reset || buttons[0] || !USB_NRESET || downloading);
 //	wire run_mem = (nes_ce == 0) && !reset_nes;
 	wire run_nes = (nes_ce == 3) && !reset_nes;
 
@@ -364,11 +365,11 @@ module NES_u16(
 		.sd_data	(SDRAM_DQ),
 		.sd_addr	(SDRAM_A),
 		.sd_dqm		({SDRAM_DQMH, SDRAM_DQML}),
-		.sd_cs		(/*SDRAM_nCS*/),
+		.sd_cs		(/*SDRAM_NCS*/),
 		.sd_ba		(SDRAM_BA),
-		.sd_we		(SDRAM_nWE),
-		.sd_ras		(SDRAM_nRAS),
-		.sd_cas		(SDRAM_nCAS),
+		.sd_we		(SDRAM_NWE),
+		.sd_ras		(SDRAM_NRAS),
+		.sd_cas		(SDRAM_NCAS),
 		// system interface
 		.clk		(clk_sdram),
 		.clkref		(nes_ce[1]),
@@ -417,8 +418,8 @@ module NES_u16(
 		doubler_sync,		// new frame has just started
 		doubler_pixel);		// pixel is outputted
 
-assign AUDIO_R = audio;
-assign AUDIO_L = audio;
+assign DN = audio;
+assign DP = audio;
 wire audio;
 	 
 	sigma_delta_dac sigma_delta_dac (

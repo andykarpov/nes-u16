@@ -4,6 +4,8 @@
 ; -----------------------------------------------------------------------------
 ; 29.11.2014	первая версия
 ; 08.11.2015	OSD буфер
+; 07.06.2016	added new games by andy.karpov
+; 12.06.2016	changed OSD control buttons by andy.karpov
 
 osd_buffer			equ #7800	; OSD buffer start address (2048 bytes length)
 osd_buffer_size			equ 2048
@@ -75,11 +77,11 @@ key1
 key_loop
 	in a,(c)
 	; Switches
-	ld de,#024C
-	cp e			; Delete = HQ2X
+	ld de,#022B
+	cp e			; Tab = HQ2X
 	jp z,key_switches
-	ld de,#0149
-	cp e			; Insert = OSD Menu
+	ld de,#012A
+	cp e			; Backspace = OSD Menu
 	jp z,key_switches
 	; Buttons
 	cp #29			; Esc = Reset
@@ -627,43 +629,43 @@ print_header
 ; x(0-41),y(0-7)
 ;		   "------------------------------------------"
 str1		db 23,0,0
-		db "[NES] (build 20160217) By MVV",13
-		db "Reset[Esc] OSD[Ins] HQ2x[Del] ROM[F1..F12]"
+		db "[NES] (build 20160612)",13
+		db "Reset[Esc] OSD[Bks] HQ2x[Tab] ROM[F1..F12]"
 		db "DJOY1: use arrow keys for D-Pad",23,7,3
 		db "A[A] B[S] Sel[Space] Start[Enter]",13
 		db "DJOY2: use numpad keys for D-Pad",23,7,5
 		db "A[1] B[2] Sel[3] Start[4]",13
-		db "Board:ReVerSE-U16c FPGA:EP4CE22 FlashID:",13
+		db "Board:ReVerSE-U16A FPGA:EP4CE22 FlashID:",13
 		db "PRG:",24,7,"CHR:",24,14,"Mapper:",24,25,"Checksum:",0
 
 ;BLOCK					START ADDRESS	END ADDRESS
-;Page_0					0x00000000	0x000AF6E8
-;Super_Mario_Bros.hex			0x000AF6E9	0x000B96F8
-;Gradius.hex				0x000B96F9	0x000C9708
-;Tank1990.hex				0x000C9709	0x000D3718
-;Chip_'n_Dale_Rescue_Rangers.hex	0x000D3719	0x00113728
-;Contra.hex				0x00113729	0x00133738
-;Lode_Runner.hex			0x00133739	0x00139748
-;Darkwing_Duck.hex			0x00139749	0x00179758
-;Castlevania_III.hex			0x00179759	0x001D9768
-;Teenage_Mutant_Ninja_Turtles_III.hex	0x001D9769	0x00259778
-;Tiny_Toon_Adventures.hex		0x00259779	0x00299788
-;battletoads.hex			0x00299789	0x002D9798
-;Prince_of_Persia.hex			0x002D9799	0x002F97A8
+;Page_0		0x00000000		0x000AF6E8
+;SuperMario.hex		0x000AF6E9		0x000B96F8
+;Bomberman.hex		0x000B96F9		0x000BF708
+;BattleTank.hex		0x000BF709		0x000CF718
+;LodeRunner.hex		0x000CF719		0x000D5728
+;PacMan.hex		0x000D5729		0x000DB738
+;Puzznic.hex		0x000DB739		0x000EB748
+;Arkanoid.hex		0x000EB749		0x000F7758
+;Airwolf.hex		0x000F7759		0x0011F768
+;Robocop.hex		0x0011F769		0x0015F778
+;1942.hex		0x0015F779		0x00169788
+;1943.hex		0x00169789		0x00189798
+;SuperMario3.hex		0x00189799		0x001E97A8
 
 rom1		db #0A,#F6,#E9 
 rom2		db #0B,#96,#F9
-rom3		db #0C,#97,#09
-rom4		db #0D,#37,#19
-rom5		db #11,#37,#29
-rom6		db #13,#37,#39
-rom7		db #13,#97,#49
-rom8		db #17,#97,#59
-rom9		db #1D,#97,#69
-rom10		db #25,#97,#79
-rom11		db #29,#97,#89
-rom12		db #2D,#97,#99
-		db #2F,#97,#A9	;End
+rom3		db #0B,#F7,#09
+rom4		db #0C,#F7,#19
+rom5		db #0D,#57,#29
+rom6		db #0D,#B7,#39
+rom7		db #0E,#B7,#49
+rom8		db #0F,#77,#59
+rom9		db #11,#F7,#69
+rom10		db #15,#F7,#79
+rom11		db #16,#97,#89
+rom12		db #18,#97,#99
+			db #1E,#97,#A9	;End
 
 checksum_32	db #00
 checksum_24	db #00

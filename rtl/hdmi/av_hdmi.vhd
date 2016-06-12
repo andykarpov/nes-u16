@@ -19,10 +19,10 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 entity av_hdmi is
 generic
 (
-	FREQ: integer := 27000000;		-- pixel clock frequency
-	FS: integer := 48000;			-- audio sample rate - should be 32000, 41000 or 48000
-	CTS: integer := 27000;			-- CTS = Freq(pixclk) * N / (128 * Fs)
-	N: integer := 6144				-- N = 128 * Fs /1000,  128 * Fs /1500 <= N <= 128 * Fs /300
+	FREQ: integer := 21000000;		-- pixel clock frequency
+	FS: integer := 32000;			-- audio sample rate - should be 32000, 41000 or 48000
+	CTS: integer := 21000;			-- CTS = Freq(pixclk) * N / (128 * Fs)
+	N: integer := 4096				-- N = 128 * Fs /1000,  128 * Fs /1500 <= N <= 128 * Fs /300
 											-- Check HDMI spec 7.2 for details
 );
 port (
