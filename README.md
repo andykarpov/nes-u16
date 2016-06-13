@@ -15,7 +15,7 @@
 * установленный sjasmplus из [https://github.com/z00m128/sjasmplus](https://github.com/z00m128/sjasmplus) и доступный в PATH
 * установленный php-cli не ниже 5.6
 * наличие make 
-* наличие objcopy из утилит GCC
+* установленный python
 
 ### Порядок сборки 
 

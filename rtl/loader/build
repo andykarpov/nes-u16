@@ -1,12 +1,12 @@
 #!/usr/bin/env php
 <?php
 
-define('BINTOHEX', 'objcopy -F binary -O ihex ');
 define('ASM', 'sjasmplus');
 define('START_ADDRESS', 0x0AF6E9);
 define ('BUILD_PATH', dirname(__FILE__) . '/');
 define('ROM_PATH', realpath(BUILD_PATH . '../../roms/') . '/');
 define('SYN_PATH', realpath(BUILD_PATH . '../../syn/') . '/');
+define('BINTOHEX', BUILD_PATH . 'bin2hex --binaries=0,');
 
 $cwd = getcwd();
 chdir(BUILD_PATH);
@@ -117,7 +117,7 @@ $roms = array_slice($roms, 0, 12);
 foreach ($roms as $key => $rom) {
 
 	$rom_hex = str_replace('.nes', '.hex', $rom);
-	exec(BINTOHEX . $rom . ' ' . $rom_hex);
+	exec(BINTOHEX . escapeshellarg($rom));
 
 	$rom_hexblock = '../roms/' . basename(str_replace('.nes', '.hex', $rom));
 	$roms_cof .= tpl($cof_block_tpl, ['FILE' => $rom_hexblock, 'OFFSET' => $offset]);
@@ -162,6 +162,6 @@ file_put_contents(BUILD_PATH . 'roms.asm', $roms_asm);
 file_put_contents(BUILD_PATH . 'info.asm', $roms_info);
 
 exec(ASM . " loader.asm");
-exec(BINTOHEX . " loader.bin loader.hex");
+exec(BINTOHEX . escapeshellarg("loader.bin"));
 
 chdir($cwd);
