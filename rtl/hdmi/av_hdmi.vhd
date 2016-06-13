@@ -54,10 +54,10 @@ architecture rtl of av_hdmi is
 component hdmidataencoder
 generic
 (
-	FREQ: integer := 27000000;
-	FS: integer := 48000;
-	CTS: integer := 27000;
-	N: integer := 6144
+	FREQ: integer := 21000000;
+	FS: integer := 32000;
+	CTS: integer := 21000;
+	N: integer := 4096
 );
 port (
 	i_pixclk	: in std_logic;

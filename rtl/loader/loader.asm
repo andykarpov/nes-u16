@@ -6,6 +6,7 @@
 ; 08.11.2015	OSD буфер
 ; 07.06.2016	added new games by andy.karpov
 ; 12.06.2016	changed OSD control buttons by andy.karpov
+; 13.06.2016	added loader generation by makefile 
 
 osd_buffer			equ #7800	; OSD buffer start address (2048 bytes length)
 osd_buffer_size			equ 2048
@@ -618,54 +619,9 @@ print_header
 	call print_hex
 	ret
 
-; -----------------------------------------------------------------------------
-; управляющие коды
-; 13 (0x0d)		- след строка
-; 23 (0x17),x,y		- изменить позицию на координаты x,y
-; 24 (0x18),x		- изменить позицию по x
-; 25 (0x19),y		- изменить позицию по y
-; 0			- конец строки
+info	INCLUDE "info.asm"
 
-; x(0-41),y(0-7)
-;		   "------------------------------------------"
-str1		db 23,0,0
-		db "[NES] (build 20160612)",13
-		db "Reset[Esc] OSD[Bks] HQ2x[Tab] ROM[F1..F12]"
-		db "DJOY1: use arrow keys for D-Pad",23,7,3
-		db "A[A] B[S] Sel[Space] Start[Enter]",13
-		db "DJOY2: use numpad keys for D-Pad",23,7,5
-		db "A[1] B[2] Sel[3] Start[4]",13
-		db "Board:ReVerSE-U16A FPGA:EP4CE22 FlashID:",13
-		db "PRG:",24,7,"CHR:",24,14,"Mapper:",24,25,"Checksum:",0
-
-;BLOCK					START ADDRESS	END ADDRESS
-;Page_0		0x00000000		0x000AF6E8
-;SuperMario.hex		0x000AF6E9		0x000B96F8
-;Bomberman.hex		0x000B96F9		0x000BF708
-;BattleTank.hex		0x000BF709		0x000CF718
-;LodeRunner.hex		0x000CF719		0x000D5728
-;PacMan.hex		0x000D5729		0x000DB738
-;Puzznic.hex		0x000DB739		0x000EB748
-;Arkanoid.hex		0x000EB749		0x000F7758
-;Airwolf.hex		0x000F7759		0x0011F768
-;Robocop.hex		0x0011F769		0x0015F778
-;1942.hex		0x0015F779		0x00169788
-;1943.hex		0x00169789		0x00189798
-;SuperMario3.hex		0x00189799		0x001E97A8
-
-rom1		db #0A,#F6,#E9 
-rom2		db #0B,#96,#F9
-rom3		db #0B,#F7,#09
-rom4		db #0C,#F7,#19
-rom5		db #0D,#57,#29
-rom6		db #0D,#B7,#39
-rom7		db #0E,#B7,#49
-rom8		db #0F,#77,#59
-rom9		db #11,#F7,#69
-rom10		db #15,#F7,#79
-rom11		db #16,#97,#89
-rom12		db #18,#97,#99
-			db #1E,#97,#A9	;End
+roms	INCLUDE "roms.asm"
 
 checksum_32	db #00
 checksum_24	db #00

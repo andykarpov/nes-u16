@@ -155,8 +155,8 @@ module NES_u16(
 		.I_BLANK(blank), 
 		.I_HSYNC(nes_hs),
 		.I_VSYNC(nes_vs),
-		.I_AUDIO_PCM_L(sample),
-		.I_AUDIO_PCM_R(sample),
+		.I_AUDIO_PCM_L({sample[15:8], 8'b00000000}),
+		.I_AUDIO_PCM_R({sample[15:8], 8'b00000000}),
 		.O_TMDS_D0(HDMI_D0),
 		.O_TMDS_D1(HDMI_D1),
 		.O_TMDS_D2(HDMI_D2),
@@ -267,10 +267,6 @@ module NES_u16(
 	wire [7:0] 	loader_input;
 	wire		loader_clk;
 	reg [7:0]	loader_btn, loader_btn_2;
-
-	// NES Palette -> RGB332 conversion
-	reg [15:0]	pallut[0:63];
-	initial $readmemh("../src/nes_palette.txt", pallut);
 
 	wire [8:0]	cycle;
 	wire [8:0]	scanline;
@@ -385,38 +381,28 @@ module NES_u16(
 	);
 
 	wire downloading;
-	
-	wire [14:0] 	doubler_pixel;
-	wire		doubler_sync;
-	wire [9:0]	vga_hcounter, doubler_x;
-	wire [9:0]	vga_vcounter;
-	
-	VgaDriver vga(
-		clk,
-		nes_hs,
-		nes_vs,
-		nes_r,
-		nes_g,
-		nes_b,
-		vga_hcounter,
-		vga_vcounter,
-		doubler_x,
-		blank,
-		doubler_pixel,
-		doubler_sync,
-		1'b0);
-	
-	wire [14:0] pixel_in = pallut[color];
-	
-	Hq2x hq2x(
-		clk,
-		pixel_in,
-		switches[1],		// enabled 
-		scanline[8],		// reset_frame
-		(cycle[8:3] == 42),	// reset_line
-		doubler_x,		// 0-511 for line 1, or 512-1023 for line 2.
-		doubler_sync,		// new frame has just started
-		doubler_pixel);		// pixel is outputted
+
+wire scandoubler_disable;
+assign scandoubler_disable = 1'b0;
+
+video video (
+	.clk(clk),
+		
+	.color(color),
+	.count_v(scanline),
+	.count_h(cycle),
+	.mode(scandoubler_disable),
+	.smoothing(switches[1]),
+
+	.VGA_HS(nes_hs),
+	.VGA_VS(nes_vs),
+	.VGA_R(nes_r),
+	.VGA_G(nes_g),
+	.VGA_B(nes_b),
+	.VGA_BLANK(blank),
+	.VGA_HCOUNTER(vga_hcounter),
+	.VGA_VCOUNTER(vga_vcounter)
+);
 
 assign DN = audio;
 assign DP = audio;

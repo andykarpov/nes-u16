@@ -1,0 +1,167 @@
+#!/usr/bin/env php
+<?php
+
+define('BINTOHEX', 'objcopy -F binary -O ihex ');
+define('ASM', 'sjasmplus');
+define('START_ADDRESS', 0x0AF6E9);
+define ('BUILD_PATH', dirname(__FILE__) . '/');
+define('ROM_PATH', realpath(BUILD_PATH . '../../roms/') . '/');
+define('SYN_PATH', realpath(BUILD_PATH . '../../syn/') . '/');
+
+$cwd = getcwd();
+chdir(BUILD_PATH);
+
+$BUILD = date('Ymd');
+$PROJECT = ($argc && $argc > 1) ? $argv[1] : 'NES';
+$BOARDFILE = ($argc && $argc > 2) ? $argv[2] : 'revX';
+$PART = ($argc && $argc > 3) ? $argv[3] : 'EP4CEXXEXX';
+$FLASH_LOADER = ($argc && $argc > 4) ? $argv[4] : 'EP4CEXX';
+$FLASH_CONFIG = ($argc && $argc > 5) ? $argv[5] : 'EPCSXX';
+
+function int2hexbytes($value) {
+	$a = unpack("C*", pack("L", $value));
+	$a = array_map(function($item) {
+		return '#' . strtoupper(str_pad(dechex($item), 2, '0', STR_PAD_LEFT));
+	}, $a);
+	return $a[3] . ',' . $a[2] . ',' . $a[1];
+}
+
+function tpl($tpl, $values) {
+	foreach($values as $key => $value) {
+		$tpl = str_replace('[' . $key . ']', $value, $tpl);
+	}
+	return $tpl;
+}
+
+$cof_tpl = <<<EOT
+<?xml version="1.0" encoding="US-ASCII" standalone="yes"?>
+<cof>
+	<eprom_name>[FLASH_CONFIG]</eprom_name>
+	<flash_loader_device>[FLASH_LOADER]</flash_loader_device>
+	<output_filename>[PROJECT]_[BOARDFILE].jic</output_filename>
+	<n_pages>1</n_pages>
+	<width>1</width>
+	<mode>7</mode>
+	[ROMS_COF]
+	<sof_data>
+		<start_address>00000000</start_address>
+		<user_name>Page_0</user_name>
+		<page_flags>1</page_flags>
+		<bit0>
+			<sof_filename>[PROJECT]_[BOARDFILE].sof</sof_filename>
+		</bit0>
+	</sof_data>
+	<version>9</version>
+	<create_cvp_file>0</create_cvp_file>
+	<auto_create_rpd>0</auto_create_rpd>
+	<create_hps_iocsr>0</create_hps_iocsr>
+	<create_fif_file>0</create_fif_file>
+	<options>
+		<map_file>1</map_file>
+	</options>
+	<advanced_options>
+		<ignore_epcs_id_check>0</ignore_epcs_id_check>
+		<ignore_condone_check>2</ignore_condone_check>
+		<plc_adjustment>0</plc_adjustment>
+		<post_chain_bitstream_pad_bytes>-1</post_chain_bitstream_pad_bytes>
+		<post_device_bitstream_pad_bytes>-1</post_device_bitstream_pad_bytes>
+		<bitslice_pre_padding>1</bitslice_pre_padding>
+	</advanced_options>
+</cof>
+
+EOT;
+
+$cof_block_tpl = <<<EOT
+	<hex_block>
+		<hex_filename>[FILE]</hex_filename>
+		<hex_addressing>relative</hex_addressing>
+		<hex_offset>[OFFSET]</hex_offset>
+	</hex_block>
+
+EOT;
+
+$cdf_tpl = <<<EOT
+JedecChain;
+        FileRevision(JESD32A);
+        DefaultMfr(6E);
+
+        P ActionCode(Cfg)
+                Device PartName([FLASH_LOADER]) Path("[PWD]/") File("[PROJECT]_[BOARDFILE].jic") MfrSpec(OpMask(1) SEC_Device([FLASH_CONFIG]) Child_OpMask(1 1));
+
+ChainEnd;
+
+AlteraBegin;
+        ChainType(JTAG);
+AlteraEnd;
+EOT;
+
+$roms_info_tpl = <<<EOT
+str1	db 23,0,0
+		db "[NES] (build [BUILD])",13
+		db "Reset[Esc] OSD[Bks] HQ2x[Tab] ROM[F1..F12]"
+		db "DJOY1: use arrow keys for D-Pad",23,7,3
+		db "A[A] B[S] Sel[Space] Start[Enter]",13
+		db "DJOY2: use numpad keys for D-Pad",23,7,5
+		db "A[1] B[2] Sel[3] Start[4]",13
+		db "Board: U16-[BOARDFILE] FPGA:[PART] FlashID:",13
+		db "PRG:",24,7,"CHR:",24,14,"Mapper:",24,25,"Checksum:",0
+EOT;
+
+
+$roms = glob(ROM_PATH . '*.nes');
+$roms_cof = '';
+$roms_asm = '';
+$offset = START_ADDRESS;
+$roms = array_slice($roms, 0, 12);
+
+foreach ($roms as $key => $rom) {
+
+	$rom_hex = str_replace('.nes', '.hex', $rom);
+	exec(BINTOHEX . $rom . ' ' . $rom_hex);
+
+	$rom_hexblock = '../roms/' . basename(str_replace('.nes', '.hex', $rom));
+	$roms_cof .= tpl($cof_block_tpl, ['FILE' => $rom_hexblock, 'OFFSET' => $offset]);
+
+	$asm_bytes = int2hexbytes($offset);
+	$i = $key+1;
+	$roms_asm .= "rom{$i} 		db {$asm_bytes}\n";
+	$offset += filesize($rom);
+}
+
+if (count($roms) < 12) {
+	for ($i=count($roms)+1; $i<=12; $i++) {
+		$asm_bytes = int2hexbytes($offset);
+		$roms_asm .= "rom{$i} 		db {$asm_bytes}\n";
+	}
+}
+
+$asm_bytes = int2hexbytes($offset);
+$roms_asm .= "		db {$asm_bytes} ; End\n\n";
+
+$roms_info = tpl($roms_info_tpl, ['BUILD' => $BUILD, 'BOARDFILE' => $BOARDFILE, 'PART' => $PART]);
+
+$cof = tpl($cof_tpl, [
+	'FLASH_CONFIG' => $FLASH_CONFIG, 
+	'FLASH_LOADER' => $FLASH_LOADER, 
+	'PROJECT' => $PROJECT, 
+	'BOARDFILE' => $BOARDFILE,
+	'ROMS_COF' => $roms_cof
+]);
+
+$cdf = tpl($cdf_tpl, [
+	'FLASH_CONFIG' => $FLASH_CONFIG, 
+	'FLASH_LOADER' => $FLASH_LOADER, 
+	'PROJECT' => $PROJECT, 
+	'BOARDFILE' => $BOARDFILE,
+	'PWD' => SYN_PATH
+]);
+
+file_put_contents(SYN_PATH . $PROJECT . '_' . $BOARDFILE . '.cof', $cof);
+file_put_contents(SYN_PATH . $PROJECT . '_' . $BOARDFILE . '.cdf', $cdf);
+file_put_contents(BUILD_PATH . 'roms.asm', $roms_asm);
+file_put_contents(BUILD_PATH . 'info.asm', $roms_info);
+
+exec(ASM . " loader.asm");
+exec(BINTOHEX . " loader.bin loader.hex");
+
+chdir($cwd);

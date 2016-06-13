@@ -140,10 +140,10 @@ module NES(input clk, input reset, input ce,
            output [7:0] memory_dout,
            
            output [8:0] cycle,
-           output [8:0] scanline
+           output [8:0] scanline,
            
-//           output reg [31:0] dbgadr,
-//           output [1:0] dbgctr
+           output reg [31:0] dbgadr,
+           output [1:0] dbgctr
            );
   reg [7:0] from_data_bus;
   wire [7:0] cpu_dout;
@@ -285,8 +285,6 @@ module NES(input clk, input reset, input ce,
                                memory_addr, memory_read_cpu, memory_read_ppu, memory_write, memory_dout);
 
   always @* begin
-    if (ppu_cs) begin from_data_bus = ppu_dout; end else
-    if (prg_allow) begin from_data_bus = memory_din_cpu; end else
     if (apu_cs) begin
       if (joypad1_cs)
         from_data_bus = {7'b0100000, joypad_data[0]};
@@ -294,25 +292,13 @@ module NES(input clk, input reset, input ce,
         from_data_bus = {7'b0100000, joypad_data[1]};
       else
         from_data_bus = apu_dout;
-    end else
-      begin
-        from_data_bus = prg_dout_mapper;
-      end
-   end
+    end else if (ppu_cs) begin
+      from_data_bus = ppu_dout;
+    end else if (prg_allow) begin
+      from_data_bus = memory_din_cpu;
+    end else begin
+      from_data_bus = prg_dout_mapper;
+    end
+  end
   
-//	always @* begin
-//		case ({ppu_cs, prg_allow, apu_cs})
-//		3'b100, 3'b101, 3'b110, 3'b111:	from_data_bus = ppu_dout;
-//		3'b010, 3'b011: from_data_bus = memory_din_cpu;
-//		3'b001:	if (joypad1_cs)
-//				from_data_bus = {7'b0100000, joypad_data[0]};
-//			else if (joypad2_cs)
-//				from_data_bus = {7'b0100000, joypad_data[1]};
-//			else
-//				from_data_bus = apu_dout;
-//		3'b000: from_data_bus = prg_dout_mapper;
-//		endcase
-//	end
-
-	
 endmodule
