@@ -60,11 +60,28 @@ wire [14:0] pixel_v = (!hpicture || !vpicture) ? 15'd0 : doubler_pixel;
 wire inpicture = hpicture && vpicture;
 
 wire [14:0] vga_pixel_v;
-wire [8:0] rdaddr;
+wire [9:0] wraddr;
+wire [9:0] rdaddr;
+wire [1:0] wrlinecnt = 1'b0;
+wire [1:0] rdlinecnt = 1'b1;
+
+always @(posedge clk) begin
+	if (wrlinecnt == 1) 
+		wrlinecnt <= 0;
+	else 
+		wrlinecnt <= wrlinecnt + 1;
+end
+
+always @(posedge clk_vga) begin
+	if (rdlinecnt == 1) 
+		rdlinecnt <= 0;
+	else 
+		rdlinecnt <= rdlinecnt + 1;
+end
 
 linebuf linebuf(
 	.wrclock(clk),
-	.wraddress(h),
+	.wraddress(wraddr),
 	.data(pixel_v),
 	.wren(inpicture),
 
@@ -75,17 +92,9 @@ linebuf linebuf(
 
 wire vga_h_maxed = (vga_h==799);
 wire vga_v_maxed = (vga_v==523);
-wire vga_hend;
 wire vga_vend;
 
 crossdomain cx1(
-	.clkA(clk),
-	.clkB(clk_vga),
-	.inA(hend),
-	.outB(vga_hend)
-);
-
-crossdomain cx2(
 	.clkA(clk),
 	.clkB(clk_vga),
 	.inA(vend),
@@ -93,24 +102,24 @@ crossdomain cx2(
 );
 
 always @(posedge clk_vga) begin
-
-    if(vga_h_maxed) // todo: || vga_hend
+    if(vga_h_maxed)
         vga_h <= 0;
     else
         vga_h <= vga_h + 1;
 end
 
 always @(posedge clk_vga) begin
-    if(vga_h_maxed) // todo: || vga_hend
+    if(vga_h_maxed)
     begin
-        if (vga_v_maxed || vga_vend)
+        if (vga_vend)
             vga_v <= 0;
         else
             vga_v <= vga_v + 1;
     end
 end
 
-assign rdaddr = (vga_inpicture) ? vga_h - 64 : 9'd0;
+assign wraddr = h + (wrlinecnt ? 512 : 0);
+assign rdaddr = (vga_inpicture) ? vga_h - 64 + (rdlinecnt ? 512 : 0) : 9'd0;
 
 wire  [4:0]   vga_r = (vga_inpicture) ? vga_pixel_v[4:0] : 5'd0;
 wire  [4:0]   vga_g = (vga_inpicture) ? vga_pixel_v[9:5] : 5'd0;
@@ -118,7 +127,7 @@ wire  [4:0]   vga_b = (vga_inpicture) ? vga_pixel_v[14:10] : 5'd0;
 wire         sync_h = ((vga_h >= (640 + 16)) && (vga_h < (640 + 16 + 96)));
 wire         sync_v = ((vga_v >= (480 + 11))  && (vga_v < (480 + 11 + 2)));
 wire vga_hpicture  = (vga_h >= 64 && vga_h < 512+64);             // 512px in line
-wire vga_vpicture  = (vga_v < 480); // 480 lines
+wire vga_vpicture  = (vga_v >= 1 && vga_v < 479); // 480 lines
 wire vga_inpicture = vga_hpicture && vga_vpicture;
 
 assign       VGA_HS = ~sync_h;
