@@ -62,21 +62,21 @@ wire inpicture = hpicture && vpicture;
 wire [14:0] vga_pixel_v;
 wire [9:0] wraddr;
 wire [9:0] rdaddr;
-wire [1:0] wrlinecnt = 1'b0;
-wire [1:0] rdlinecnt = 1'b1;
+reg wrlinecnt = 1'b0;
+reg rdlinecnt = 1'b1;
 
 always @(posedge clk) begin
 	if (wrlinecnt == 1) 
 		wrlinecnt <= 0;
 	else 
-		wrlinecnt <= wrlinecnt + 1;
+		wrlinecnt <= 1;
 end
 
 always @(posedge clk_vga) begin
 	if (rdlinecnt == 1) 
 		rdlinecnt <= 0;
 	else 
-		rdlinecnt <= rdlinecnt + 1;
+		rdlinecnt <= 1;
 end
 
 linebuf linebuf(
