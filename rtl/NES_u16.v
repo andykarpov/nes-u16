@@ -2,89 +2,9 @@
 // This program is GPL Licensed. See COPYING for the full license.
 //
 // Modified for ReVerSE-U16 By MVV (build 20160217)
+// Modified for ReVerSE-U16 revA by andy.karpov
 
 //`timescale 1ns / 1ps
-
-
-// Module reads bytes and writes to proper address in ram.
-// Done is asserted when the whole game is loaded.
-// This parses iNES headers too.
-module GameLoader(
-	input			clk,
-	input			reset,
-	input [7:0]		indata,
-	input			indata_clk,
-	output reg [21:0]	mem_addr,
-	output [7:0]		mem_data,
-	output			mem_write,
-	output [31:0]		mapper_flags,
-	output reg		done);
-	
-	reg [ 1:0] state = 0;
-	reg [ 7:0] prgsize;
-	reg [ 3:0] ctr;
-	reg [ 7:0] ines[0:15];	// 16 bytes of iNES header
-	reg [21:0] bytes_left;
-	
-//	assign error = (state == 3);
-	assign mem_data = indata;
-	assign mem_write = (bytes_left != 0) && (state == 1 || state == 2) && indata_clk;
-	
-	wire [2:0] prg_size =	ines[4] <= 1 ? 0 :
-				ines[4] <= 2 ? 1 : 
-				ines[4] <= 4 ? 2 : 
-				ines[4] <= 8 ? 3 : 
-				ines[4] <= 16 ? 4 : 
-				ines[4] <= 32 ? 5 : 
-				ines[4] <= 64 ? 6 : 7;
-												
-	wire [2:0] chr_size = 	ines[5] <= 1 ? 0 : 
-				ines[5] <= 2 ? 1 : 
-				ines[5] <= 4 ? 2 : 
-				ines[5] <= 8 ? 3 : 
-				ines[5] <= 16 ? 4 : 
-				ines[5] <= 32 ? 5 : 
-				ines[5] <= 64 ? 6 : 7;
-	
-	wire has_chr_ram = (ines[5] == 0);
-	assign mapper_flags = {16'b0, has_chr_ram, ines[6][0], chr_size, prg_size, ines[7][7:4], ines[6][7:4]};
-	
-	always @(posedge clk) begin
-		if (reset) begin
-			state <= 0;
-			done <= 0;
-			ctr <= 0;
-			mem_addr <= 0;	// Address for PRG
-		end else begin
-			case(state)
-			// Read 16 bytes of ines header
-			0: if (indata_clk) begin
-				ctr <= ctr + 1;
-				ines[ctr] <= indata;
-				bytes_left <= {ines[4], 14'b0};
-				if (ctr == 4'b1111)
-					state <= (ines[0] == 8'h4E) && (ines[1] == 8'h45) && (ines[2] == 8'h53) && (ines[3] == 8'h1A) && !ines[6][2] && !ines[6][3] ? 1 : 3;
-				end
-			1, 2: begin // Read the next |bytes_left| bytes into |mem_addr|
-				if (bytes_left != 0) begin
-					if (indata_clk) begin
-						bytes_left <= bytes_left - 1;
-						mem_addr <= mem_addr + 1;
-					end
-				end else if (state == 1) begin
-					state <= 2;
-					mem_addr <= 22'b10_0000_0000_0000_0000_0000; // Address for CHR
-					bytes_left <= {1'b0, ines[5], 13'b0};
-				end else if (state == 2) begin
-				done <= 1;
-				end
-				end
-			endcase
-		end
-	end
-endmodule
-
-
 module NES_u16(	
 
 	// clock input
@@ -92,10 +12,7 @@ module NES_u16(
 	input       USB_NRESET,
 
 	// HDMI
-	output		HDMI_D0,
-	output		HDMI_D1, HDMI_D1N,
-	output		HDMI_D2,
-	output		HDMI_CLK,
+	output  [7:0] TMDS,
 	
 	// USB HOST	
 	input		USB_TX,
@@ -124,93 +41,110 @@ module NES_u16(
 	output		DP
 );
 
-	// VGA
-	wire [7:0]	vga_red;
-	wire [7:0]	vga_green;	
-	wire [7:0]	vga_blue;	
-	wire [2:0]	tmds_d;
-	
-//	wire [7:0]	joyA;
-//	wire [7:0]	joyB;
+	// virtual buttons and switches
 	wire [1:0]	buttons;
 	wire [2:0]	switches;
 	 
+	// spi
+	wire 		spi1_clk;
+	wire 		spi1_do;
+	wire 		spi1_di;
 
-	wire spi1_clk;
-	wire spi1_do;
-	wire spi1_di;
-	
-	wire [4:0] nes_r;
-	wire [4:0] nes_g;
-	wire [4:0] nes_b;
-	wire nes_hs;
-	wire nes_vs;
+	// vga
+	wire [7:0]	vga_red;
+	wire [7:0]	vga_green;	
+	wire [7:0]	vga_blue;
+	wire [4:0] 	nes_r;
+	wire [4:0] 	nes_g;
+	wire [4:0] 	nes_b;
+	wire 		nes_hs;
+	wire 		nes_vs;
+	wire 		blank;
+	wire [10:0]      vga_hcounter, vga_vcounter;
 
-	av_hdmi tmds(
-		.I_CLK_PIXEL(clk), // 21
-		.I_CLK_PIXEL_x5(clk_dvi), // 105
-		.I_R(vga_red),
-		.I_G(vga_green),
-		.I_B(vga_blue),
-		.I_BLANK(blank), 
-		.I_HSYNC(nes_hs),
-		.I_VSYNC(nes_vs),
-		.I_AUDIO_PCM_L({sample[15:8], 8'b00000000}),
-		.I_AUDIO_PCM_R({sample[15:8], 8'b00000000}),
-		.O_TMDS_D0(HDMI_D0),
-		.O_TMDS_D1(HDMI_D1),
-		.O_TMDS_D2(HDMI_D2),
-		.O_TMDS_CLK(HDMI_CLK)
-	);
-	
-	wire blank;
-	assign HDMI_D1N = 1'b0;
-	assign USB_NCS = 1'b0;
-
-	// =======================================================
-	osd cocpu(
-		.I_RESET	(!USB_NRESET),
-		.I_CLK		(clk42),	// 42MHz
-		.I_CLK_CPU	(clk),		// 21MHz
-		.I_KEY0		(key0),
-		.I_KEY1		(key1),
-		.I_KEY2		(key2),
-		.I_KEY3		(key3),
-		.I_KEY4		(key4),
-		.I_KEY5		(key5),
-		.I_KEY6		(key6),
-		.I_SPI_MISO	(DATA0),
-		.I_SPI1_MISO	(spi1_do),
-		.I_RED		(nes_r),
-		.I_GREEN	(nes_g),
-		.I_BLUE		(nes_b),
-		.I_HCNT		(vga_hcounter),
-		.I_VCNT		(vga_vcounter),
-		.I_DOWNLOAD_OK	(loader_done),
-		.O_RED		(vga_red),
-		.O_GREEN	(vga_green),
-		.O_BLUE		(vga_blue),
-		.O_BUTTONS	(buttons),
-		.O_SWITCHES	(switches),
-		.O_JOYPAD_KEYS	(joypad_keys),
-		.O_SPI_CLK	(DCLK),
-		.O_SPI_MOSI	(ASDO),
-		.O_SPI_CS_N	(NCSO),	// SPI FLASH
-		.O_SPI1_CS_N	(),		// SD Card
-		.O_DOWNLOAD_DO	(loader_input),
-		.O_DOWNLOAD_WR	(loader_clk),
-		.O_DOWNLOAD_ON	(downloading)
-	);
-
+	// kbd
 	wire [15:0] joypad_keys;
-	wire [7:0] key0;
-	wire [7:0] key1;
-	wire [7:0] key2;
-	wire [7:0] key3;
-	wire [7:0] key4;
-	wire [7:0] key5;
-	wire [7:0] key6;
-		
+	wire [7:0] 	key0;
+	wire [7:0] 	key1;
+	wire [7:0] 	key2;
+	wire [7:0] 	key3;
+	wire [7:0] 	key4;
+	wire [7:0] 	key5;
+	wire [7:0] 	key6;
+
+	// clk
+	wire 		clk_sdram;
+	wire 		clk;
+	wire 		clk21;
+	wire 		clk42;
+	wire 		clk25;
+	wire 		clk125;
+	wire 		clk250;
+	wire 		clk_vga;
+	wire 		clk_dvi;
+	wire 		clock_locked;
+	reg [63:0]	acc;
+
+	// reset
+	reg 		init_reset;
+
+	// pwm audio
+	wire 		audio;
+
+	// spi
+	wire 		spi2_cs_n;
+	wire 		spi3_cs_n;
+	wire 		spi4_cs_n;
+	
+	// loader
+	wire [7:0] 	loader_input;
+	wire		loader_clk;
+	reg [7:0]	loader_btn, loader_btn_2;
+	wire [21:0]	loader_addr;
+	wire [7:0]	loader_write_data;
+	wire 		downloading;
+	wire		loader_reset;
+	wire		loader_write;
+	wire		loader_done;
+	reg			loader_write_mem;
+	reg [7:0]	loader_write_data_mem;
+	reg [21:0]	loader_addr_mem;
+	reg			loader_write_triggered;
+
+	// nes signals
+	wire [8:0]	cycle;
+	wire [8:0]	scanline;
+	wire [15:0]	sample;
+	wire [5:0]	color;
+	wire		joypad_strobe;
+	wire [1:0]	joypad_clock;
+	wire [21:0] memory_addr;
+	wire		memory_read_cpu, memory_read_ppu;
+	wire		memory_write;
+	wire [7:0]	memory_din_cpu, memory_din_ppu;
+	wire [7:0]	memory_dout;
+	wire		joypad_bits, joypad_bits2;
+	reg [1:0]	last_joypad_clock;
+	reg [1:0]	nes_ce;
+	wire [31:0]	mapper_flags;
+	wire reset_nes;
+	wire run_nes;
+
+	// -- components --
+
+	clk clock_21mhz(
+		.inclk0		(CLK_50MHZ),
+		.c0		(clk_sdram), // 84
+		.c2		(clk), // 21
+		.c3		(clk42), // 42
+		.locked		(clock_locked));
+
+	clk_vga clock_25mhz(
+		.inclk0		(CLK_50MHZ),
+		.c0		(clk_vga), // 25
+		.c1		(clk_dvi), // 125
+		.c2 	(clk250)); // 250
+
 	hid hid(
 		.I_CLK		(CLK_50MHZ),
 		.I_RESET	(!USB_NRESET),
@@ -229,66 +163,7 @@ module NES_u16(
 		.O_KEY4		(key4),
 		.O_KEY5		(key5),
 		.O_KEY6		(key6));
-
-	
-	
-	// =======================================================
-
-	
-	wire clock_locked;
-	wire clk_sdram;
-	wire clk_dvi;
-	wire clk42;
-	assign SDRAM_CLK = clk_sdram;
-	
-	clk clock_21mhz(
-		.inclk0		(CLK_50MHZ),
-		.c0		(clk_sdram), // 84
-		.c1		(clk_dvi),	// 105
-		.c2		(clk), // 21
-		.c3		(clk42), // 42
-		.locked		(clock_locked));
-
-	// hold machine in reset until first download starts
-	reg init_reset;
-	always @(posedge CLK_50MHZ) begin
-	if(!clock_locked)
-		init_reset <= 1'b1;
-	else if(downloading)
-		init_reset <= 1'b0;
-	end
-	
-	wire clk;
-	wire spi2_cs_n;
-	wire spi3_cs_n;
-	wire spi4_cs_n;
-	
-	// Loader
-	wire [7:0] 	loader_input;
-	wire		loader_clk;
-	reg [7:0]	loader_btn, loader_btn_2;
-
-	wire [8:0]	cycle;
-	wire [8:0]	scanline;
-	wire [15:0]	sample;
-	wire [5:0]	color;
-	wire		joypad_strobe;
-	wire [1:0]	joypad_clock;
-	wire [21:0] 	memory_addr;
-	wire		memory_read_cpu, memory_read_ppu;
-	wire		memory_write;
-	wire [7:0]	memory_din_cpu, memory_din_ppu;
-	wire [7:0]	memory_dout;
-	wire		joypad_bits, joypad_bits2;
-	reg [1:0]	last_joypad_clock;
-	reg [1:0]	nes_ce;
-	wire [21:0]	loader_addr;
-	wire [7:0]	loader_write_data;
-	wire		loader_reset = !downloading; //loader_conf[0];
-	wire		loader_write;
-	wire [31:0]	mapper_flags;
-	wire		loader_done;
-	
+		
 	GameLoader loader(
 		clk,
 		loader_reset,
@@ -300,17 +175,6 @@ module NES_u16(
 		mapper_flags,
 		loader_done);
 
-//TH	wire reset_nes = (buttons[1] || !loader_done);
-//	wire reset_nes = (init_reset || buttons[1] || status[0] || status[4] || downloading);
-	wire reset_nes = (init_reset || buttons[0] || !USB_NRESET || downloading);
-//	wire run_mem = (nes_ce == 0) && !reset_nes;
-	wire run_nes = (nes_ce == 3) && !reset_nes;
-
-	// NES is clocked at every 4th cycle.
-	always @(posedge clk)
-//	always @(negedge clk)
-		nes_ce <= nes_ce + 2'b1;
-		
 	NES nes(
 		clk,
 		reset_nes,
@@ -331,30 +195,6 @@ module NES_u16(
 		memory_dout,
 		cycle,
 		scanline);
-		//dbgadr,
-		//dbgctr);
-
-	//assign SDRAM_CKE = 1'b1;
-
-	// loader_write -> clock when data available
-	reg		loader_write_mem;
-	reg [7:0]	loader_write_data_mem;
-	reg [21:0]	loader_addr_mem;
-	reg		loader_write_triggered;
-
-	always @(posedge clk) begin
-		if(loader_write) begin
-			loader_write_triggered	<= 1'b1;
-			loader_addr_mem		<= loader_addr;
-			loader_write_data_mem	<= loader_write_data;
-		end
-	
-		if(nes_ce == 3) begin
-			loader_write_mem <= loader_write_triggered;
-			if(loader_write_triggered)
-				loader_write_triggered <= 1'b0;
-			end
-		end
 
 	sdram sdram (
 		// interface to the MT48LC16M16 chip
@@ -380,33 +220,70 @@ module NES_u16(
 		.doutB		(memory_din_ppu)
 	);
 
-	wire downloading;
+	video video (
+		.clk(clk),
+		.clk_vga(clk_vga),
+			
+		.color(color),
+		.count_v(scanline),
+		.count_h(cycle),
+		.smoothing(switches[1]),
 
-wire scandoubler_disable;
-assign scandoubler_disable = 1'b0;
+		.VGA_HS(nes_hs),
+		.VGA_VS(nes_vs),
+		.VGA_R(nes_r),
+		.VGA_G(nes_g),
+		.VGA_B(nes_b),
+		.VGA_BLANK(blank),
+		.VGA_HCOUNTER(vga_hcounter),
+		.VGA_VCOUNTER(vga_vcounter)
+	);
 
-video video (
-	.clk(clk),
-		
-	.color(color),
-	.count_v(scanline),
-	.count_h(cycle),
-	.mode(scandoubler_disable),
-	.smoothing(switches[1]),
+	osd cocpu(
+		.I_RESET	(!USB_NRESET),
+		.I_CLK		(clk42),	// 42MHz
+		.I_CLK_CPU	(clk),		// 21MHz
+		.I_KEY0		(key0),
+		.I_KEY1		(key1),
+		.I_KEY2		(key2),
+		.I_KEY3		(key3),
+		.I_KEY4		(key4),
+		.I_KEY5		(key5),
+		.I_KEY6		(key6),
+		.I_SPI_MISO	(DATA0),
+		.I_SPI1_MISO	(spi1_do),
+		.I_RED		(nes_r),
+		.I_GREEN	(nes_g),
+		.I_BLUE		(nes_b),
+		.I_HCNT		(vga_hcounter),
+		.I_VCNT		(vga_vcounter),
+		.I_DOWNLOAD_OK	(loader_done),
+//		.O_RED		(vga_red),
+//		.O_GREEN	(vga_green),
+//		.O_BLUE		(vga_blue),
+		.O_BUTTONS	(buttons),
+		.O_SWITCHES	(switches),
+		.O_JOYPAD_KEYS	(joypad_keys),
+		.O_SPI_CLK	(DCLK),
+		.O_SPI_MOSI	(ASDO),
+		.O_SPI_CS_N	(NCSO),	// SPI FLASH
+		.O_SPI1_CS_N	(),		// SD Card
+		.O_DOWNLOAD_DO	(loader_input),
+		.O_DOWNLOAD_WR	(loader_clk),
+		.O_DOWNLOAD_ON	(downloading)
+	);
 
-	.VGA_HS(nes_hs),
-	.VGA_VS(nes_vs),
-	.VGA_R(nes_r),
-	.VGA_G(nes_g),
-	.VGA_B(nes_b),
-	.VGA_BLANK(blank),
-	.VGA_HCOUNTER(vga_hcounter),
-	.VGA_VCOUNTER(vga_vcounter)
-);
-
-assign DN = audio;
-assign DP = audio;
-wire audio;
+	hdmi hdmi(
+		.I_CLK_PIXEL(clk_vga), // 25
+		.I_CLK_TMDS(clk_dvi), // 125
+		.I_RED({nes_r[4:0], 3'b0}),
+		.I_GREEN({nes_g[4:0], 3'b0}),
+		.I_BLUE({nes_b[4:0], 3'b0}),
+		.I_BLANK(blank), 
+		.I_HSYNC(nes_hs),
+		.I_VSYNC(nes_vs),
+		.O_TMDS(TMDS)
+	);
 	 
 	sigma_delta_dac sigma_delta_dac (
 		.DACout		(audio),
@@ -414,5 +291,47 @@ wire audio;
 		.CLK		(clk),
 		.RESET		(reset_nes)
 	);
+
+	// hold machine in reset until first download starts
+	always @(posedge CLK_50MHZ) begin
+		if(!clock_locked)
+			init_reset <= 1'b1;
+		else if(downloading)
+			init_reset <= 1'b0;
+	end
+
+	// calculated by http://electronicsfun.net/archives/699
+	// phase accumulator to produce 21.312499999999999 MHz
+	//always @(posedge clk250) begin
+	//	acc <= acc + 1572584932283739400;
+	//end
+	//assign clk = acc[63];
+
+	// NES is clocked at every 4th cycle.
+	always @(posedge clk)
+		nes_ce <= nes_ce + 1;
+
+	// loader_write -> clock when data available
+	always @(posedge clk) begin
+		if(loader_write) begin
+			loader_write_triggered	<= 1'b1;
+			loader_addr_mem		<= loader_addr;
+			loader_write_data_mem	<= loader_write_data;
+		end
+	
+		if(nes_ce == 3) begin
+			loader_write_mem <= loader_write_triggered;
+			if(loader_write_triggered)
+				loader_write_triggered <= 1'b0;
+		end
+	end
+
+	assign DN = audio;
+	assign DP = audio;
+	assign SDRAM_CLK = clk_sdram;
+	assign USB_NCS = 1'b0;
+	assign loader_reset = !downloading;
+	assign reset_nes = (init_reset || buttons[0] || !USB_NRESET || downloading);
+	assign run_nes = (nes_ce == 3) && !reset_nes;
 
 endmodule

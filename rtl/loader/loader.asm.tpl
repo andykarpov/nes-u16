@@ -1,5 +1,5 @@
  		DEVICE	ZXSPECTRUM48
-; -----------------------------------------------------------------[17.02.2016]
+; -----------------------------------------------------------------[BUILD]
 ; ReVerSE-U16 NES Loader By MVV
 ; -----------------------------------------------------------------------------
 ; 29.11.2014	первая версия
@@ -7,6 +7,7 @@
 ; 07.06.2016	added new games by andy.karpov
 ; 12.06.2016	changed OSD control buttons by andy.karpov
 ; 13.06.2016	added loader generation by makefile 
+; 26.06.2016	created loader.asm.tpl
 
 osd_buffer			equ #7800	; OSD buffer start address (2048 bytes length)
 osd_buffer_size			equ 2048
@@ -619,9 +620,17 @@ print_header
 	call print_hex
 	ret
 
-info	INCLUDE "info.asm"
+str1	db 23,0,0
+		db "[NES] (build [BUILD])",13
+		db "Reset[Esc] OSD[Bks] HQ2x[Tab] ROM[F1..F12]"
+		db "DJOY1: use arrow keys for D-Pad",23,7,3
+		db "A[A] B[S] Sel[Space] Start[Enter]",13
+		db "DJOY2: use numpad keys for D-Pad",23,7,5
+		db "A[1] B[2] Sel[3] Start[4]",13
+		db "Board: U16-[REV], FPGA: [PART], FlashID:",13
+		db "PRG:",24,7,"CHR:",24,14,"Mapper:",24,25,"Checksum:",0
 
-roms	INCLUDE "roms.asm"
+[ROMS]
 
 checksum_32	db #00
 checksum_24	db #00

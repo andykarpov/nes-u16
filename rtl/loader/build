@@ -14,6 +14,7 @@ chdir(BUILD_PATH);
 $BUILD = date('Ymd');
 $PROJECT = ($argc && $argc > 1) ? $argv[1] : 'NES';
 $BOARDFILE = ($argc && $argc > 2) ? $argv[2] : 'revX';
+$REV = str_replace('rev', '', $BOARDFILE);
 $PART = ($argc && $argc > 3) ? $argv[3] : 'EP4CEXXEXX';
 $FLASH_LOADER = ($argc && $argc > 4) ? $argv[4] : 'EP4CEXX';
 $FLASH_CONFIG = ($argc && $argc > 5) ? $argv[5] : 'EPCSXX';
@@ -95,18 +96,7 @@ AlteraBegin;
 AlteraEnd;
 EOT;
 
-$roms_info_tpl = <<<EOT
-str1	db 23,0,0
-		db "[NES] (build [BUILD])",13
-		db "Reset[Esc] OSD[Bks] HQ2x[Tab] ROM[F1..F12]"
-		db "DJOY1: use arrow keys for D-Pad",23,7,3
-		db "A[A] B[S] Sel[Space] Start[Enter]",13
-		db "DJOY2: use numpad keys for D-Pad",23,7,5
-		db "A[1] B[2] Sel[3] Start[4]",13
-		db "Board: U16-[BOARDFILE] FPGA:[PART] FlashID:",13
-		db "PRG:",24,7,"CHR:",24,14,"Mapper:",24,25,"Checksum:",0
-EOT;
-
+$loader_asm_tpl = file_get_contents(BUILD_PATH . 'loader.asm.tpl');
 
 $roms = glob(ROM_PATH . '*.nes');
 $roms_cof = '';
@@ -124,21 +114,27 @@ foreach ($roms as $key => $rom) {
 
 	$asm_bytes = int2hexbytes($offset);
 	$i = $key+1;
-	$roms_asm .= "rom{$i} 		db {$asm_bytes}\n";
+	$roms_asm .= "rom{$i}	db {$asm_bytes}\r\n";
 	$offset += filesize($rom);
 }
 
 if (count($roms) < 12) {
 	for ($i=count($roms)+1; $i<=12; $i++) {
 		$asm_bytes = int2hexbytes($offset);
-		$roms_asm .= "rom{$i} 		db {$asm_bytes}\n";
+		$roms_asm .= "rom{$i}	db {$asm_bytes}\r\n";
 	}
 }
 
 $asm_bytes = int2hexbytes($offset);
-$roms_asm .= "		db {$asm_bytes} ; End\n\n";
+$roms_asm .= "		db {$asm_bytes} ; End\r\n\r\n";
 
-$roms_info = tpl($roms_info_tpl, ['BUILD' => $BUILD, 'BOARDFILE' => $BOARDFILE, 'PART' => $PART]);
+$loader_asm = tpl($loader_asm_tpl, [
+	'BUILD' => $BUILD, 
+	'BOARDFILE' => $BOARDFILE, 
+	'REV' => $REV,
+	'PART' => $FLASH_LOADER, 
+	'ROMS' => $roms_asm
+]);
 
 $cof = tpl($cof_tpl, [
 	'FLASH_CONFIG' => $FLASH_CONFIG, 
@@ -158,8 +154,7 @@ $cdf = tpl($cdf_tpl, [
 
 file_put_contents(SYN_PATH . $PROJECT . '_' . $BOARDFILE . '.cof', $cof);
 file_put_contents(SYN_PATH . $PROJECT . '_' . $BOARDFILE . '.cdf', $cdf);
-file_put_contents(BUILD_PATH . 'roms.asm', $roms_asm);
-file_put_contents(BUILD_PATH . 'info.asm', $roms_info);
+file_put_contents(BUILD_PATH . 'loader.asm', $loader_asm);
 
 exec(ASM . " loader.asm");
 exec(BINTOHEX . escapeshellarg("loader.bin"));

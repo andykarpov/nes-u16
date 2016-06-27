@@ -19,19 +19,20 @@ BOARDFILE = revA
 ###################################################################
 # Sources
 
-SRCS = ../rtl/hdmi/serializer.vhd \
-	../rtl/hdmi/hdmidelay.vhd \
-	../rtl/hdmi/hdmidataencoder.v \
+SRCS = ../rtl/hdmi/altddio_out1.vhd \
 	../rtl/hdmi/encoder.vhd \
-	../rtl/hdmi/av_hdmi.vhd \
+	../rtl/hdmi/hdmi.vhd \
 	../rtl/memory/ram.vhd \
+	../rtl/memory/linebuf.vhd \
 	../rtl/cpu/nz80cpu.vhd \
 	../rtl/keyboard/receiver.vhd \
 	../rtl/spi/spi.vhd \
 	../rtl/sigma_delta_dac.v \
 	../rtl/sdram.v \
 	../rtl/NES_u16.v \
+	../rtl/Gameloader.v \
 	../rtl/clk.v \
+	../rtl/clk_vga.vhd \
 	../src/video.v \
 	../src/ppu.v \
 	../src/nes.v \
@@ -44,6 +45,7 @@ SRCS = ../rtl/hdmi/serializer.vhd \
 	../src/apu.v \
 	../rtl/osd/osd.vhd \
 	../rtl/keyboard/hid.vhd \
+	../rtl/crossdomain.v \
 
 ###################################################################
 # Additional variables
@@ -57,10 +59,12 @@ ASSIGNMENT_FILES = $(PROJECT)_$(BOARDFILE).qpf $(PROJECT)_$(BOARDFILE).qsf
 #
 # all: build everything
 # clean: remove output files and database
+# jic: create jic programming file
 # program: program your device with the compiled design
 ###################################################################
 
-all: smart.log $(PROJECT)_$(BOARDFILE).asm.rpt $(PROJECT)_$(BOARDFILE).sta.rpt $(PROJECT)_$(BOARDFILE).cof
+#all: smart.log $(PROJECT)_$(BOARDFILE).asm.rpt $(PROJECT)_$(BOARDFILE).sta.rpt $(PROJECT)_$(BOARDFILE).cof
+all: smart.log $(PROJECT)_$(BOARDFILE).asm.rpt $(PROJECT)_$(BOARDFILE).cof
 
 clean: 
 	rm -f *.rpt \
@@ -74,6 +78,7 @@ clean:
 		*.jic \
 		*.qsf \
 		*.qpf \
+		*.qip \
 		*.summary \
 		*.smsg \
 		*.cof \
@@ -84,8 +89,7 @@ clean:
 		PLLJ_PLLSPE_INFO.txt \
 		../rtl/loader/loader.bin \
 		../rtl/loader/loader.hex \
-		../rtl/loader/info.asm \
-		../rtl/loader/roms.asm \
+		../rtl/loader/loader.asm \
 		../roms/*.hex \
 
 	rm -rf db \
