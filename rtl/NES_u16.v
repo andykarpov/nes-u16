@@ -75,15 +75,9 @@ module NES_u16(
 	// clk
 	wire 		clk_sdram;
 	wire 		clk;
-	wire 		clk21;
 	wire 		clk42;
-	wire 		clk25;
-	wire 		clk125;
-	wire 		clk250;
-	wire 		clk_vga;
 	wire 		clk_dvi;
 	wire 		clock_locked;
-	reg [63:0]	acc;
 
 	// reset
 	reg 		init_reset;
@@ -135,15 +129,11 @@ module NES_u16(
 	clk clock_21mhz(
 		.inclk0		(CLK_50MHZ),
 		.c0		(clk_sdram), // 84
+		.c1 	(clk_dvi), // 105
 		.c2		(clk), // 21
 		.c3		(clk42), // 42
-		.locked		(clock_locked));
-
-	clk_vga clock_25mhz(
-		.inclk0		(CLK_50MHZ),
-		.c0		(clk_vga), // 25
-		.c1		(clk_dvi), // 125
-		.c2 	(clk250)); // 250
+		.locked		(clock_locked)
+	);
 
 	hid hid(
 		.I_CLK		(CLK_50MHZ),
@@ -222,7 +212,6 @@ module NES_u16(
 
 	video video (
 		.clk(clk),
-		.clk_vga(clk_vga),
 			
 		.color(color),
 		.count_v(scanline),
@@ -258,9 +247,9 @@ module NES_u16(
 		.I_HCNT		(vga_hcounter),
 		.I_VCNT		(vga_vcounter),
 		.I_DOWNLOAD_OK	(loader_done),
-//		.O_RED		(vga_red),
-//		.O_GREEN	(vga_green),
-//		.O_BLUE		(vga_blue),
+		.O_RED		(vga_red),
+		.O_GREEN	(vga_green),
+		.O_BLUE		(vga_blue),
 		.O_BUTTONS	(buttons),
 		.O_SWITCHES	(switches),
 		.O_JOYPAD_KEYS	(joypad_keys),
@@ -274,11 +263,11 @@ module NES_u16(
 	);
 
 	hdmi hdmi(
-		.I_CLK_PIXEL(clk_vga), // 25
-		.I_CLK_TMDS(clk_dvi), // 125
-		.I_RED({nes_r[4:0], 3'b0}),
-		.I_GREEN({nes_g[4:0], 3'b0}),
-		.I_BLUE({nes_b[4:0], 3'b0}),
+		.I_CLK_PIXEL(clk), // 21
+		.I_CLK_TMDS(clk_dvi), // 105
+		.I_RED(vga_red),
+		.I_GREEN(vga_green),
+		.I_BLUE(vga_blue),
 		.I_BLANK(blank), 
 		.I_HSYNC(nes_hs),
 		.I_VSYNC(nes_vs),
@@ -299,13 +288,6 @@ module NES_u16(
 		else if(downloading)
 			init_reset <= 1'b0;
 	end
-
-	// calculated by http://electronicsfun.net/archives/699
-	// phase accumulator to produce 21.312499999999999 MHz
-	//always @(posedge clk250) begin
-	//	acc <= acc + 1572584932283739400;
-	//end
-	//assign clk = acc[63];
 
 	// NES is clocked at every 4th cycle.
 	always @(posedge clk)

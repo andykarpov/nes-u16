@@ -32,7 +32,6 @@ SRCS = ../rtl/hdmi/altddio_out1.vhd \
 	../rtl/NES_u16.v \
 	../rtl/Gameloader.v \
 	../rtl/clk.v \
-	../rtl/clk_vga.vhd \
 	../src/video.v \
 	../src/ppu.v \
 	../src/nes.v \
@@ -45,7 +44,6 @@ SRCS = ../rtl/hdmi/altddio_out1.vhd \
 	../src/apu.v \
 	../rtl/osd/osd.vhd \
 	../rtl/keyboard/hid.vhd \
-	../rtl/crossdomain.v \
 
 ###################################################################
 # Additional variables
