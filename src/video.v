@@ -1,6 +1,5 @@
 // Copyright (c) 2012-2013 Ludvig Strigeus
 // This program is GPL Licensed. See COPYING for the full license.
-// VGA upconverter by Andy Karpov (c) 2016
 
 module video(
 	input  clk, // 21Mhz

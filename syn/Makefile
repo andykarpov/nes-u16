@@ -19,19 +19,23 @@ BOARDFILE = revA
 ###################################################################
 # Sources
 
-SRCS = ../rtl/hdmi/altddio_out1.vhd \
-	../rtl/hdmi/encoder.vhd \
+SRCS = ../rtl/NES_u16.v \
+	../rtl/Gameloader.v \
 	../rtl/hdmi/hdmi.vhd \
+	../rtl/hdmi/encoder.vhd \
+	../rtl/hdmi/altddio_out1.vhd \
+	../rtl/pll/clk21.vhd \
+	../rtl/pll/clk27.vhd \
+	../rtl/memory/sdram.v \
 	../rtl/memory/ram.vhd \
 	../rtl/memory/linebuf.vhd \
-	../rtl/cpu/nz80cpu.vhd \
-	../rtl/keyboard/receiver.vhd \
 	../rtl/spi/spi.vhd \
-	../rtl/sigma_delta_dac.v \
-	../rtl/sdram.v \
-	../rtl/NES_u16.v \
-	../rtl/Gameloader.v \
-	../rtl/clk.v \
+	../rtl/sound/sigma_delta_dac.v \
+	../rtl/video/transcoder.v \
+	../rtl/cpu/nz80cpu.vhd \
+	../rtl/osd/osd.vhd \
+	../rtl/keyboard/hid.vhd \
+	../rtl/keyboard/receiver.vhd \
 	../src/video.v \
 	../src/ppu.v \
 	../src/nes.v \
@@ -42,8 +46,6 @@ SRCS = ../rtl/hdmi/altddio_out1.vhd \
 	../src/cpu.v \
 	../src/compat.v \
 	../src/apu.v \
-	../rtl/osd/osd.vhd \
-	../rtl/keyboard/hid.vhd \
 
 ###################################################################
 # Additional variables
