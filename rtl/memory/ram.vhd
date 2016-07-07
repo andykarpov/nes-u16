@@ -43,8 +43,8 @@ USE altera_mf.altera_mf_components.all;
 ENTITY ram IS
 	PORT
 	(
-		address_a		: IN STD_LOGIC_VECTOR (14 DOWNTO 0);
-		address_b		: IN STD_LOGIC_VECTOR (14 DOWNTO 0);
+		address_a		: IN STD_LOGIC_VECTOR (13 DOWNTO 0);
+		address_b		: IN STD_LOGIC_VECTOR (13 DOWNTO 0);
 		clock_a		: IN STD_LOGIC  := '1';
 		clock_b		: IN STD_LOGIC ;
 		data_a		: IN STD_LOGIC_VECTOR (7 DOWNTO 0);
@@ -77,8 +77,8 @@ BEGIN
 		init_file => "../rtl/loader/loader.hex",
 		intended_device_family => "Cyclone IV E",
 		lpm_type => "altsyncram",
-		numwords_a => 32768,
-		numwords_b => 32768,
+		numwords_a => 16384,
+		numwords_b => 16384,
 		operation_mode => "BIDIR_DUAL_PORT",
 		outdata_aclr_a => "NONE",
 		outdata_aclr_b => "NONE",
@@ -87,8 +87,8 @@ BEGIN
 		power_up_uninitialized => "FALSE",
 		read_during_write_mode_port_a => "NEW_DATA_WITH_NBE_READ",
 		read_during_write_mode_port_b => "NEW_DATA_WITH_NBE_READ",
-		widthad_a => 15,
-		widthad_b => 15,
+		widthad_a => 14,
+		widthad_b => 14,
 		width_a => 8,
 		width_b => 8,
 		width_byteena_a => 1,

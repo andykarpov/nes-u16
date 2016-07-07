@@ -24,24 +24,23 @@ SRCS = ../rtl/NES_u16.v \
 	../rtl/hdmi/hdmi.vhd \
 	../rtl/hdmi/encoder.vhd \
 	../rtl/hdmi/altddio_out1.vhd \
+	../rtl/video/fb_video.v \
 	../rtl/pll/clk21.vhd \
 	../rtl/pll/clk27.vhd \
+	../rtl/pll/clock.vhd \
 	../rtl/memory/sdram.v \
 	../rtl/memory/ram.vhd \
-	../rtl/memory/linebuf.vhd \
+	../rtl/memory/framebuffer.vhd \
 	../rtl/spi/spi.vhd \
 	../rtl/sound/sigma_delta_dac.v \
-	../rtl/video/transcoder.v \
 	../rtl/cpu/nz80cpu.vhd \
 	../rtl/osd/osd.vhd \
 	../rtl/keyboard/hid.vhd \
 	../rtl/keyboard/receiver.vhd \
-	../src/video.v \
 	../src/ppu.v \
 	../src/nes.v \
 	../src/mmu.v \
 	../src/MicroCode.v \
-	../src/hq2x.v \
 	../src/dsp.v \
 	../src/cpu.v \
 	../src/compat.v \

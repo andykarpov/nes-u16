@@ -647,7 +647,8 @@ font	INCBIN "font.bin"
 
 header		db #0000,#0000,#0000,#0000
 	
-	savebin "loader.bin",startprog, 32768
+;	savebin "loader.bin",startprog, 32768
+	savebin "loader.bin",startprog, 16384
 
 	display "osd_buffer start = ",/a, osd_buffer
 	display "font start = ",/a, font

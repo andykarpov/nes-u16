@@ -50,28 +50,14 @@ module NES_u16(
 	wire 		spi1_do;
 	wire 		spi1_di;
 
-	// nes video output
-	wire [4:0] 	nes_r;
-	wire [4:0] 	nes_g;
-	wire [4:0] 	nes_b;
-	wire 		nes_hs;
-	wire 		nes_vs;
-	wire 		nes_blank;
-	wire [10:0] nes_h, nes_v;
-
-	// osd video
-	wire [7:0]	osd_r;
-	wire [7:0]	osd_g;	
-	wire [7:0]	osd_b;
-
-
 	// hdmi video
-	wire [7:0]	hdmi_r;
-	wire [7:0]	hdmi_g;	
-	wire [7:0]	hdmi_b;
+	wire [4:0]	hdmi_r;
+	wire [4:0]	hdmi_g;	
+	wire [4:0]	hdmi_b;
 	wire 		hdmi_hs;
 	wire 		hdmi_vs;
 	wire 		hdmi_blank;	
+	wire [10:0] hdmi_h, hdmi_v;
 
 	// kbd
 	wire [15:0] joypad_keys;
@@ -90,7 +76,6 @@ module NES_u16(
 	wire 		clk_dvi;
 	wire 		clk_sdram;
 	wire 		clock_locked;
-	reg [1:0]   clkcnt;
 
 	// reset
 	reg 		init_reset;
@@ -141,16 +126,16 @@ module NES_u16(
 
 	clk21 cl1(
 		.inclk0 (CLK_50MHZ),
-		.c0 (clk_sdram), // 84
-		.c1 (clk_42),    // 42
-		.c2 (clk_21),     // 21
+		.c0 (clk_sdram),
+		.c1 (clk_42),
+		.c2 (clk_21),
 		.locked (clock_locked)
 	);
 
 	clk27 cl0(
 		.inclk0 (CLK_50MHZ),
-		.c0 (clk_27),   // 27
-		.c1 (clk_dvi)   // 135
+		.c0 (clk_27),
+		.c1 (clk_dvi)
 	);
 
 	hid hid(
@@ -231,22 +216,22 @@ module NES_u16(
 		.doutB		(memory_din_ppu)
 	);
 
-	video video (
-		.clk(clk_21),
-			
-		.color(color),
-		.count_v(scanline),
-		.count_h(cycle),
-		.smoothing(switches[1]),
+	fb_video fb_video (
+		.clk (clk_21),
+		.clk_vga (clk_27),
 
-		.VGA_HS(nes_hs),
-		.VGA_VS(nes_vs),
-		.VGA_R(nes_r),
-		.VGA_G(nes_g),
-		.VGA_B(nes_b),
-		.VGA_BLANK(nes_blank),
-		.VGA_HCOUNTER(nes_h),
-		.VGA_VCOUNTER(nes_v)
+		.pixel (color),
+		.count_h (cycle),
+		.count_v (scanline),
+
+		.VGA_R (hdmi_r),
+		.VGA_G (hdmi_g),
+		.VGA_B (hdmi_b),
+		.VGA_HS (hdmi_hs),
+		.VGA_VS (hdmi_vs),
+		.VGA_HCOUNTER (hdmi_h),
+		.VGA_VCOUNTER (hdmi_v),
+		.VGA_BLANK (hdmi_blank)
 	);
 
 	osd cocpu(
@@ -262,15 +247,15 @@ module NES_u16(
 		.I_KEY6		(key6),
 		.I_SPI_MISO	(DATA0),
 		.I_SPI1_MISO	(spi1_do),
-		.I_RED		(nes_r),
-		.I_GREEN	(nes_g),
-		.I_BLUE		(nes_b),
-		.I_HCNT		(nes_h),
-		.I_VCNT		(nes_v),
+		//.I_RED		(nes_r),
+		//.I_GREEN	(nes_g),
+		//.I_BLUE		(nes_b),
+		.I_HCNT		(hdmi_h),
+		.I_VCNT		(hdmi_v),
 		.I_DOWNLOAD_OK	(loader_done),
-		.O_RED		(osd_r),
-		.O_GREEN	(osd_g),
-		.O_BLUE		(osd_b),
+		//.O_RED		(osd_r),
+		//.O_GREEN	(osd_g),
+		//.O_BLUE		(osd_b),
 		.O_BUTTONS	(buttons),
 		.O_SWITCHES	(switches),
 		.O_JOYPAD_KEYS	(joypad_keys),
@@ -283,33 +268,18 @@ module NES_u16(
 		.O_DOWNLOAD_ON	(downloading)
 	);
 
-	// 512x480 to 720x480
-	transcoder transcoder(
-		.clk(clk_21),
-		.clk_vga(clk_27),
-
-		.i_r(osd_r),
-		.i_g(osd_g),
-		.i_b(osd_b),
-		.i_h(nes_h),
-		.i_v(nes_v),
-		.i_hs(nes_hs),
-		.i_vs(nes_vs),
-
-		.o_r(hdmi_r),
-		.o_g(hdmi_g),
-		.o_b(hdmi_b),
-		.o_blank(hdmi_blank),
-		.o_hs(hdmi_hs),
-		.o_vs(hdmi_vs)
-	);
+	reg [10:0] nes_h, nes_v;
+	always @(posedge clk_21) begin
+		nes_h <= cycle * 2;
+		nes_v <= scanline * 2;
+	end
 
 	hdmi hdmi(
 		.I_CLK_PIXEL(clk_27), // 27
 		.I_CLK_TMDS(clk_dvi), // 135
-		.I_RED(hdmi_r),
-		.I_GREEN(hdmi_g),
-		.I_BLUE(hdmi_b),
+		.I_RED({hdmi_r[4:0], 3'b000}),
+		.I_GREEN({hdmi_g[4:0], 3'b000}),
+		.I_BLUE({hdmi_b[4:0], 3'b000}),
 		.I_BLANK(hdmi_blank), 
 		.I_HSYNC(hdmi_hs),
 		.I_VSYNC(hdmi_vs),

@@ -116,8 +116,8 @@ port map(
 	
 u2: entity work.ram
 port map(
-	address_a 	=> cpu_addr(14 downto 0),
-	address_b	=> "1111" & osd_vcnt(6 downto 4) & osd_hcnt(7 downto 0),
+	address_a 	=> cpu_addr(13 downto 0),
+	address_b	=> "111" & osd_vcnt(6 downto 4) & osd_hcnt(7 downto 0),
 	clock_a	 	=> I_CLK,
 	clock_b		=> I_CLK_CPU,
 	data_a	 	=> cpu_do,
