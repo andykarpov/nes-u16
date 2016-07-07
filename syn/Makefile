@@ -12,7 +12,7 @@ TOP_LEVEL_ENTITY = NES_u16
 
 FAMILY = "Cyclone IV E"
 PART = EP4CE22E22C8
-FLASH_CONFIG = EPCS64
+FLASH_CONFIG = EPCS16
 FLASH_LOADER = EP4CE22
 BOARDFILE = revA
 
@@ -21,9 +21,11 @@ BOARDFILE = revA
 
 SRCS = ../rtl/NES_u16.v \
 	../rtl/Gameloader.v \
-	../rtl/hdmi/hdmi.vhd \
-	../rtl/hdmi/encoder.vhd \
-	../rtl/hdmi/altddio_out1.vhd \
+	../rtl/hdmi-audio/av_hdmi.vhd \
+	../rtl/hdmi-audio/encoder.vhd \
+	../rtl/hdmi-audio/hdmidelay.vhd \
+	../rtl/hdmi-audio/serializer.vhd \
+	../rtl/hdmi-audio/hdmidataencoder.v \
 	../rtl/video/fb_video.v \
 	../rtl/pll/clk21.vhd \
 	../rtl/pll/clk27.vhd \

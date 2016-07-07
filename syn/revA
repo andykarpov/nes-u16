@@ -55,22 +55,18 @@ set_location_assignment PIN_126 -to SD_SO
 set_location_assignment PIN_114 -to SD_NCS
 
 #=================HDMI==========================
-set_location_assignment PIN_10 -to TMDS[7]
-set_location_assignment PIN_11 -to TMDS[6]
-set_location_assignment PIN_144 -to TMDS[5]
-set_location_assignment PIN_143 -to TMDS[4]
-set_location_assignment PIN_133 -to TMDS[3]
-set_location_assignment PIN_132 -to TMDS[2]
-set_location_assignment PIN_113 -to TMDS[1]
-set_location_assignment PIN_112 -to TMDS[0]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to TMDS[7]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to TMDS[6]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to TMDS[5]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to TMDS[4]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to TMDS[3]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to TMDS[2]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to TMDS[1]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to TMDS[0]
+set_location_assignment PIN_113 -to HDMI_CLK
+set_location_assignment PIN_112 -to "HDMI_CLK(n)"
+set_location_assignment PIN_133 -to HDMI_D0
+set_location_assignment PIN_132 -to "HDMI_D0(n)"
+set_location_assignment PIN_144 -to HDMI_D1
+set_location_assignment PIN_143 -to HDMI_D1N
+set_location_assignment PIN_10 -to HDMI_D2
+set_location_assignment PIN_11 -to "HDMI_D2(n)"
+set_instance_assignment -name IO_STANDARD LVDS_E_3R -to HDMI_CLK
+set_instance_assignment -name IO_STANDARD LVDS_E_3R -to HDMI_D0
+set_instance_assignment -name IO_STANDARD LVDS_E_3R -to HDMI_D2
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to HDMI_D1
 
 #=================VNC2==========================
 set_location_assignment PIN_50 -to USB_SI

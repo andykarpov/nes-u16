@@ -12,8 +12,11 @@ module NES_u16(
 	input       USB_NRESET,
 
 	// HDMI
-	output  [7:0] TMDS,
-	
+     output        HDMI_D0,
+     output        HDMI_D1, HDMI_D1N,
+     output        HDMI_D2,
+     output        HDMI_CLK,
+
 	// USB HOST	
 	input		USB_TX,
 	input		USB_SI,
@@ -268,22 +271,23 @@ module NES_u16(
 		.O_DOWNLOAD_ON	(downloading)
 	);
 
-	reg [10:0] nes_h, nes_v;
-	always @(posedge clk_21) begin
-		nes_h <= cycle * 2;
-		nes_v <= scanline * 2;
-	end
-
-	hdmi hdmi(
+	av_hdmi av_hdmi(
 		.I_CLK_PIXEL(clk_27), // 27
-		.I_CLK_TMDS(clk_dvi), // 135
-		.I_RED({hdmi_r[4:0], 3'b000}),
-		.I_GREEN({hdmi_g[4:0], 3'b000}),
-		.I_BLUE({hdmi_b[4:0], 3'b000}),
+		.I_CLK_PIXEL_x5(clk_dvi), // 135
+		.I_R({hdmi_r[4:0], 3'b000}),
+		.I_G({hdmi_g[4:0], 3'b000}),
+		.I_B({hdmi_b[4:0], 3'b000}),
 		.I_BLANK(hdmi_blank), 
 		.I_HSYNC(hdmi_hs),
 		.I_VSYNC(hdmi_vs),
-		.O_TMDS(TMDS)
+
+		.I_AUDIO_PCM_R({1'b0, sample[15:8], 7'b0000000}),
+		.I_AUDIO_PCM_L({1'b0, sample[15:8], 7'b0000000}),
+
+		.O_TMDS_D0 (HDMI_D0),
+		.O_TMDS_D1 (HDMI_D1),
+		.O_TMDS_D2 (HDMI_D2),
+		.O_TMDS_CLK (HDMI_CLK)
 	);
 	 
 	// todo: switch to 84 MHz, 16 bit full sample, etc
@@ -326,6 +330,7 @@ module NES_u16(
 	assign DP = audio;
 	assign SDRAM_CLK = clk_sdram;
 	assign USB_NCS = 1'b0;
+	assign HDMI_D1N = 1'b0;
 	assign loader_reset = !downloading;
 	assign reset_nes = (init_reset || buttons[0] || !USB_NRESET || downloading);
 	assign run_nes = (nes_ce == 3) && !reset_nes;
