@@ -3,13 +3,13 @@
 
 define('ASM', 'sjasmplus');
 define('START_ADDRESS', 0x0AF6E9);
-define ('BUILD_PATH', dirname(__FILE__) . '/');
-define('ROM_PATH', realpath(BUILD_PATH . '../../roms/') . '/');
-define('SYN_PATH', realpath(BUILD_PATH . '../../syn/') . '/');
-define('BINTOHEX', BUILD_PATH . 'bin2hex --binaries=0,');
+define ('BUILD_PATH', realpath(dirname(__FILE__) . '/../rtl/loader/') . '/');
+define('ROM_PATH', realpath(dirname(__FILE__) . '/../roms/') . '/');
+define('SYN_PATH', realpath(dirname(__FILE__) . '/') . '/');
+define('BINTOHEX', SYN_PATH . 'bin2hex --binaries=0,');
 
 $cwd = getcwd();
-chdir(BUILD_PATH);
+chdir(SYN_PATH);
 
 $BUILD = date('Ymd');
 $PROJECT = ($argc && $argc > 1) ? $argv[1] : 'NES';
@@ -96,7 +96,7 @@ AlteraBegin;
 AlteraEnd;
 EOT;
 
-$loader_asm_tpl = file_get_contents(BUILD_PATH . 'loader.asm.tpl');
+$loader_asm_tpl = file_get_contents(SYN_PATH . 'loader.asm.tpl');
 
 $roms = glob(ROM_PATH . '*.nes');
 $roms_cof = '';
@@ -156,6 +156,7 @@ file_put_contents(SYN_PATH . $PROJECT . '_' . $BOARDFILE . '.cof', $cof);
 file_put_contents(SYN_PATH . $PROJECT . '_' . $BOARDFILE . '.cdf', $cdf);
 file_put_contents(BUILD_PATH . 'loader.asm', $loader_asm);
 
+chdir(BUILD_PATH);
 exec(ASM . " loader.asm");
 exec(BINTOHEX . escapeshellarg("loader.bin"));
 

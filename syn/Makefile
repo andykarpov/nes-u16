@@ -142,7 +142,7 @@ smart.log: $(ASSIGNMENT_FILES)
 
 $(ASSIGNMENT_FILES):
 
-	../rtl/loader/build $(PROJECT) $(BOARDFILE) $(PART) $(FLASH_LOADER) $(FLASH_CONFIG)
+	./build $(PROJECT) $(BOARDFILE) $(PART) $(FLASH_LOADER) $(FLASH_CONFIG)
 	quartus_sh --prepare -f $(FAMILY) -t $(TOP_LEVEL_ENTITY) $(PROJECT)_$(BOARDFILE) 
 	-cat $(BOARDFILE) >> $(PROJECT)_$(BOARDFILE).qsf
 map.chg:

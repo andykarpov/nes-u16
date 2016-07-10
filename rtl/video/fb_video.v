@@ -20,14 +20,14 @@ module fb_video (
 
 // Horizontal and vertical counters
 reg [10:0] h, v; // full
-reg [10:0] v2, h2; // half
+wire [10:0] v2, h2; // half
 
 // pixel data
 wire [5:0] pixel_i;
 wire [5:0] pixel_o;
 //reg [14:0] pixel_v;
 
-wire [15:0] rdaddress, wraddress; // rd / wr addresses
+wire [15:0] rdaddress, wraddress, offset, offset2; // rd / wr addresses
 wire wren; // write enable
 
 wire h_maxed = (h == 857); // 858 pixels
@@ -44,9 +44,12 @@ framebuffer framebuffer(
 	.q(pixel_o)
 );
 
-assign wraddress = (wren) ? count_h + (count_v * 256) : 15'b0;
+assign offset = count_v * 256;
+assign wraddress = (wren) ? count_h + offset : 15'b0;
 assign wren = ((count_h < 256) && (count_v < 240));
-assign rdaddress = (hdmi_inpicture) ? ((h2 - 52) + (v2 * 256)) : 15'b0;
+
+assign offset2 = v2 * 256;
+assign rdaddress = (hdmi_inpicture) ? ((h2 - 52) + offset2) : 15'b0;
 
 // NES Palette -> RGB555 conversion
 reg [15:0] pallut[0:63];
@@ -54,28 +57,23 @@ initial $readmemh("nes_palette.txt", pallut);
 wire [14:0] pixel_v = pallut[pixel_o][14:0];
 
 always @(posedge clk_vga) begin
-  if (h_maxed) begin
+  if (h_maxed) 
   	h <= 0;
-  	h2 <= 0;
-  end
-  else begin
+  else
   	h <= h + 1;
-  	h2 <= ((h + 1) >> 1);
-  end;
 end
 
 always @(posedge clk_vga) begin
   if (h_maxed) begin
- 	 if (v_maxed) begin
+ 	 if (v_maxed)
  	 	v <= 0;
- 	 	v2 <= 0;
- 	 end
- 	 else begin
+ 	 else
  	 	v <= v + 1;
- 	 	v2 <= ((v + 1) >> 1);
- 	 end;
   end;
 end
+
+assign h2 = h / 2;
+assign v2 = v / 2;
 
 // ------------- hdmi output assignments ---------------
 // 720	480	60 Hz	31.4685 kHz	
