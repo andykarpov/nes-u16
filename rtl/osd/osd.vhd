@@ -131,6 +131,8 @@ begin
 		reg_0 <= (others => '1');
 		buttons <= (others => '0');
 		switches <= (others => '0');
+		djoy1 <= (others => '0');
+		djoy2 <= (others => '0');
 	elsif (I_CLK'event and I_CLK = '1') then
 		if cpu_addr(7 downto 0) = X"00" and cpu_iorq = '1' and cpu_wr = '1' then reg_0 <= cpu_do; end if;
 		if cpu_addr(7 downto 0) = X"03" and cpu_iorq = '1' and cpu_wr = '1' then buttons <= cpu_do(1 downto 0); end if;
