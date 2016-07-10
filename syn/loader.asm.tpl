@@ -621,7 +621,7 @@ print_header
 	ret
 
 str1	db 23,0,0
-		db "[ReVerSE-U16 rev.[REV] NES] ([BUILD])",13
+		db "[ReVerSE-U16 rev.[REV] NES] (build [BUILD])",13
 		db "Reset[Esc] OSD[Backspace] ROM[F1..F12]",13
 		db "DJOY1: use arrow keys for D-Pad",23,7,3
 		db "A[A] B[S] Sel[Space] Start[Enter]",13
