@@ -222,6 +222,6 @@ begin
 	end case;
 end process;
 		
-O_PIXEL <= "111111" when osd_pixel = '1' and osd_de = '1' else "110000" when osd_de = '1' else I_PIXEL;
+O_PIXEL <= "110000" when osd_pixel = '1' and osd_de = '1' else "010001" when osd_de = '1' else I_PIXEL;
 
 end rtl;
