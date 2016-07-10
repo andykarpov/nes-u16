@@ -25,15 +25,11 @@ port (
 	I_KEY6		: in std_logic_vector(7 downto 0);
 	I_SPI_MISO	: in std_logic;
 	I_SPI1_MISO	: in std_logic;
-	I_RED		: in std_logic_vector(4 downto 0);
-	I_GREEN		: in std_logic_vector(4 downto 0);
-	I_BLUE		: in std_logic_vector(4 downto 0);
+	I_PIXEL 	: in std_logic_vector(5 downto 0);
 	I_HCNT		: in std_logic_vector(9 downto 0);
 	I_VCNT		: in std_logic_vector(9 downto 0);
 	I_DOWNLOAD_OK	: in std_logic;
-	O_RED		: out std_logic_vector(7 downto 0);
-	O_GREEN		: out std_logic_vector(7 downto 0);
-	O_BLUE		: out std_logic_vector(7 downto 0);
+	O_PIXEL 	: out std_logic_vector(5 downto 0);
 	O_BUTTONS	: out std_logic_vector(1 downto 0);
 	O_SWITCHES	: out std_logic_vector(2 downto 0);
 	O_JOYPAD_KEYS	: out std_logic_vector(15 downto 0);
@@ -76,12 +72,12 @@ signal djoy1		: std_logic_vector(7 downto 0);
 signal djoy2		: std_logic_vector(7 downto 0);
 signal int		: std_logic;
 
-constant OSD_INK	: std_logic_vector(2 downto 0) := "111";	-- RGB
-constant OSD_PAPER	: std_logic_vector(2 downto 0) := "011";	-- RGB
-constant OSD_H_ON	: std_logic_vector(9 downto 0) := "0010000000";	-- 128
-constant OSD_H_OFF	: std_logic_vector(9 downto 0) := "0110000000";	-- 384
-constant OSD_V_ON	: std_logic_vector(9 downto 0) := "0010110000";	-- 176
-constant OSD_V_OFF	: std_logic_vector(9 downto 0) := "0100110000";	-- 304
+--constant OSD_INK	: std_logic_vector(2 downto 0) := "111";	-- RGB
+--constant OSD_PAPER	: std_logic_vector(2 downto 0) := "001";	-- RGB
+constant OSD_H_ON	: std_logic_vector(9 downto 0) := "0000000000";	-- 0
+constant OSD_H_OFF	: std_logic_vector(9 downto 0) := "0011111111";	-- 255
+constant OSD_V_ON	: std_logic_vector(9 downto 0) := "0000111000";	-- 56
+constant OSD_V_OFF	: std_logic_vector(9 downto 0) := "0010111000";	-- 184
 
 begin
 
@@ -226,8 +222,6 @@ begin
 	end case;
 end process;
 		
-O_RED <= (others => OSD_INK(2)) when osd_pixel = '1' and osd_de = '1' else '0' & OSD_PAPER(2) & I_RED(4 downto 0) & '0' when osd_de = '1' else I_RED & "000";
-O_GREEN <= (others => OSD_INK(1)) when osd_pixel = '1' and osd_de = '1' else '0' & OSD_PAPER(1) & I_GREEN(4 downto 0) & '0' when osd_de = '1' else I_GREEN & "000";
-O_BLUE <= (others => OSD_INK(0)) when osd_pixel = '1' and osd_de = '1' else '0' & OSD_PAPER(0) & I_BLUE(4 downto 0) & '0' when osd_de = '1' else I_BLUE & "000";
+O_PIXEL <= "111111" when osd_pixel = '1' and osd_de = '1' else "110000" when osd_de = '1' else I_PIXEL;
 
 end rtl;

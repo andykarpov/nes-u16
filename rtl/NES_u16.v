@@ -62,6 +62,9 @@ module NES_u16(
 	wire 		hdmi_blank;	
 	wire [10:0] hdmi_h, hdmi_v;
 
+	// osd
+	wire [5:0]	osd_color;
+
 	// kbd
 	wire [15:0] joypad_keys;
 	wire [7:0] 	key0;
@@ -219,24 +222,6 @@ module NES_u16(
 		.doutB		(memory_din_ppu)
 	);
 
-	fb_video fb_video (
-		.clk (clk_21),
-		.clk_vga (clk_27),
-
-		.pixel (color),
-		.count_h (cycle),
-		.count_v (scanline),
-
-		.VGA_R (hdmi_r),
-		.VGA_G (hdmi_g),
-		.VGA_B (hdmi_b),
-		.VGA_HS (hdmi_hs),
-		.VGA_VS (hdmi_vs),
-		.VGA_HCOUNTER (hdmi_h),
-		.VGA_VCOUNTER (hdmi_v),
-		.VGA_BLANK (hdmi_blank)
-	);
-
 	osd cocpu(
 		.I_RESET	(!USB_NRESET),
 		.I_CLK		(clk_42),	// 42MHz
@@ -250,15 +235,11 @@ module NES_u16(
 		.I_KEY6		(key6),
 		.I_SPI_MISO	(DATA0),
 		.I_SPI1_MISO	(spi1_do),
-		//.I_RED		(nes_r),
-		//.I_GREEN	(nes_g),
-		//.I_BLUE		(nes_b),
-		.I_HCNT		(hdmi_h),
-		.I_VCNT		(hdmi_v),
+		.I_PIXEL 	(color),
+		.I_HCNT		(cycle),
+		.I_VCNT		(scanline),
 		.I_DOWNLOAD_OK	(loader_done),
-		//.O_RED		(osd_r),
-		//.O_GREEN	(osd_g),
-		//.O_BLUE		(osd_b),
+		.O_PIXEL 	(osd_color),
 		.O_BUTTONS	(buttons),
 		.O_SWITCHES	(switches),
 		.O_JOYPAD_KEYS	(joypad_keys),
@@ -269,6 +250,24 @@ module NES_u16(
 		.O_DOWNLOAD_DO	(loader_input),
 		.O_DOWNLOAD_WR	(loader_clk),
 		.O_DOWNLOAD_ON	(downloading)
+	);
+
+	fb_video fb_video (
+		.clk (clk_21),
+		.clk_vga (clk_27),
+
+		.pixel (osd_color),
+		.count_h (cycle),
+		.count_v (scanline),
+
+		.VGA_R (hdmi_r),
+		.VGA_G (hdmi_g),
+		.VGA_B (hdmi_b),
+		.VGA_HS (hdmi_hs),
+		.VGA_VS (hdmi_vs),
+		.VGA_HCOUNTER (hdmi_h),
+		.VGA_VCOUNTER (hdmi_v),
+		.VGA_BLANK (hdmi_blank)
 	);
 
 	av_hdmi av_hdmi(
