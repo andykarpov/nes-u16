@@ -102,7 +102,7 @@ $roms = glob(ROM_PATH . '*.nes');
 $roms_cof = '';
 $roms_asm = "rom	db 0\r\n";
 $offset = START_ADDRESS;
-$roms = array_slice($roms, 0, 12);
+//$roms = array_slice($roms, 0, 12);
 
 foreach ($roms as $key => $rom) {
 
@@ -115,7 +115,18 @@ foreach ($roms as $key => $rom) {
 	$asm_bytes = int2hexbytes($offset);
 	$i = $key+1;
 	//$roms_asm .= "rom{$i}	db {$asm_bytes}\r\n";
-	$rom_name = str_pad(basename($rom), 32);
+	$rom_name = str_pad(
+		substr(
+			str_replace(
+				array('.nes','_'), 
+				array('', ' '), 
+				basename($rom)
+			), 
+			3, 32
+		), 
+		32
+	);
+
 	$roms_asm .= "	db {$asm_bytes},\"{$rom_name}\",0\r\n";	
 	$offset += filesize($rom);
 }
