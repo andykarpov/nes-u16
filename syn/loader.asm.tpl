@@ -591,7 +591,7 @@ print_header
 ;	   "01234567890123456789012345678901"
 menu
 	db "NES (build [BUILD]) By MVV     "
-	db "Board:ReVerSE-U16.[REV] FlashID:  "
+	db "Board:ReVerSE-U16[REV]    FlashID:  "
 	db "Reset[Esc] OSD[Win] ROM[Up/Down]"
 	db "DJOY1-2: USB1-2 Keyboard/GamePad"
 	db "Start[Enter ]      Select[Space]"
