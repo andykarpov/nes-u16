@@ -1,9 +1,7 @@
--------------------------------------------------------------------[17.02.2016]
+-------------------------------------------------------------------[09.08.2016]
 -- USB HID
 -------------------------------------------------------------------------------
--- Engineer:	MVV
---
--- 11.11.2015	USB HID Keyboard
+-- Engineer: MVV <mvvproject@gmail.com>
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -16,19 +14,14 @@ port (
 	I_RESET		: in std_logic;
 	I_RX		: in std_logic;
 	I_NEWFRAME	: in std_logic;
-	I_JOYPAD_KEYS	: in std_logic_vector(15 downto 0);
 	I_JOYPAD_CLK1	: in std_logic;
 	I_JOYPAD_CLK2	: in std_logic;
 	I_JOYPAD_LATCH	: in std_logic;
 	O_JOYPAD_DATA1	: out std_logic;
 	O_JOYPAD_DATA2	: out std_logic;
-	O_KEY0		: out std_logic_vector(7 downto 0);
-	O_KEY1		: out std_logic_vector(7 downto 0);
-	O_KEY2		: out std_logic_vector(7 downto 0);
-	O_KEY3		: out std_logic_vector(7 downto 0);
-	O_KEY4		: out std_logic_vector(7 downto 0);
-	O_KEY5		: out std_logic_vector(7 downto 0);
-	O_KEY6		: out std_logic_vector(7 downto 0));
+	O_JOY0		: out std_logic_vector(7 downto 0);
+	O_JOY1		: out std_logic_vector(7 downto 0);
+	O_KEY		: out std_logic_vector(1 downto 0));
 end hid;
 
 architecture rtl of hid is
@@ -37,16 +30,12 @@ signal data		: std_logic_vector(7 downto 0);
 signal cnt1		: std_logic_vector(2 downto 0);
 signal cnt2		: std_logic_vector(2 downto 0);
 signal ready		: std_logic;
-signal device_id	: std_logic_vector(3 downto 0);
+signal device_id	: std_logic_vector(7 downto 0);
 signal count		: integer range 0 to 8;
-signal key0		: std_logic_vector(7 downto 0);
-signal key1		: std_logic_vector(7 downto 0);
-signal key2		: std_logic_vector(7 downto 0);
-signal key3		: std_logic_vector(7 downto 0);
-signal key4		: std_logic_vector(7 downto 0);
-signal key5		: std_logic_vector(7 downto 0);
-signal key6		: std_logic_vector(7 downto 0);
 signal joy_data		: std_logic_vector(15 downto 0);
+signal joy0		: std_logic_vector(7 downto 0);
+signal joy1		: std_logic_vector(7 downto 0);
+signal key		: std_logic_vector(1 downto 0);
 
 begin
 
@@ -62,55 +51,85 @@ begin
 	process (I_RESET, I_CLK, I_NEWFRAME, data, ready)
 	begin
 		if I_RESET = '1' then
-			key0 <= (others => '0');
-			key1 <= (others => '0');
-			key2 <= (others => '0');
-			key3 <= (others => '0');
-			key4 <= (others => '0');
-			key5 <= (others => '0');
-			key6 <= (others => '0');
+			joy0 <= (others => '0');
+			joy1 <= (others => '0');
+			key <= (others => '0');
 		elsif I_NEWFRAME = '0' then
 			count <= 0;
 		elsif (I_CLK'event and I_CLK = '1' and ready = '1') then
 			-- Инициализация
 			if (count = 0) then
 				count <= 1;
-				device_id <= data(3 downto 0);
+				device_id <= data;
 			else
 				count <= count + 1;
 				case device_id is
---					when x"2" =>	-- Mouse
---						case count is
---							when 1 => mouse0 <= data;	-- клавиши модификаторы
---							when 2 => mouse1 <= data;	-- код клавиши 1
---							when 3 => mouse2 <= data;	-- код клавиши 2
---							when 4 => mouse3 <= data;	-- код клавиши 3
---							when others => null;
---						end case;
-					when x"6" =>	-- Keyboard
+					when x"04" =>	-- HID0 Gamepad
 						case count is
-							when 1 => key0 <= data;	-- клавиши модификаторы
-							when 3 => key1 <= data;	-- код клавиши 1
-							when 4 => key2 <= data;	-- код клавиши 2
-							when 5 => key3 <= data;	-- код клавиши 3
-							when 6 => key4 <= data;	-- код клавиши 4
-							when 7 => key5 <= data;	-- код клавиши 5
-							when 8 => key6 <= data;	-- код клавиши 6
+							when 4 => joy0(0) <= data(7);			-- Right
+								  	  joy0(1) <= not data(6);		-- Left
+							when 5 => joy0(2) <= data(7);			-- Down
+								  	  joy0(3) <= not data(6);		-- Up
+							when 6 => joy0(6) <= data(6);			-- B 
+								  	  joy0(7) <= data(5);			-- A 
+								  	  key(0) <= data(7);			-- Reset [Y]
+								  	  key(1) <= data(4);			-- OSD [X]
+							when 7 => joy0(4) <= data(5);			-- Start 
+								  	  joy0(5) <= data(4);			-- Select 
 							when others => null;
 						end case;
+					when x"06" =>	-- HID0 Keyboard
+						if count = 1 then
+							joy0 <= (others => '0');
+							key <= (others => '0');
+							if data(0) = '1' then joy0(7) <= '1'; end if;	-- A [LCtrl]
+							if data(1) = '1' then joy0(6) <= '1'; end if;	-- B [LShift]
+							if data(3) = '1' then key(1) <= '1'; end if;	-- OSD [LWin]
+						else
+							case data is
+								when X"2C" => joy0(5) <= '1';		-- Select [Space]
+								when X"28" => joy0(4) <= '1';		-- Start [Enter]
+								when X"52" => joy0(3) <= '1';		-- Up
+								when X"51" => joy0(2) <= '1';		-- Down
+								when X"50" => joy0(1) <= '1';		-- Left
+								when X"4F" => joy0(0) <= '1';		-- Right
+								when X"29" => key(0) <= '1';		-- Reset [Esc]
+								when others => null;
+							end case;
+						end if;
+					when x"84" =>	-- HID1 Gamepad
+						case count is
+							when 4 => joy0(0) <= data(7);			-- Right
+								  	  joy0(1) <= not data(6);		-- Left
+							when 5 => joy0(2) <= data(7);			-- Down
+								  	  joy0(3) <= not data(6);		-- Up
+							when 6 => joy0(6) <= data(6);			-- B 
+								  	  joy0(7) <= data(5);			-- A 
+							when 7 => joy0(4) <= data(5);			-- Start 
+								  	  joy0(5) <= data(4);			-- Select 
+							when others => null;
+						end case;
+					when x"86" =>	-- HID1 Keyboard
+						if count = 1 then
+							joy1 <= (others => '0');
+							if data(0) = '1' then joy1(7) <= '1'; end if;	-- A [LCtrl]
+							if data(1) = '1' then joy1(6) <= '1'; end if;	-- B [LShift]
+						else
+							case data is
+								when X"2C" => joy1(5) <= '1';		-- Select [Space]
+								when X"28" => joy1(4) <= '1';		-- Start [Enter]
+								when X"52" => joy1(3) <= '1';		-- Up
+								when X"51" => joy1(2) <= '1';		-- Down
+								when X"50" => joy1(1) <= '1';		-- Left
+								when X"4F" => joy1(0) <= '1';		-- Right
+								when others => null;
+							end case;
+						end if;
 					when others => null;
 				end case;
 			end if;
 		end if;
 	end process;
-
-O_KEY0 <= key0;
-O_KEY1 <= key1;
-O_KEY2 <= key2;
-O_KEY3 <= key3;
-O_KEY4 <= key4;
-O_KEY5 <= key5;
-O_KEY6 <= key6;	
 	
 	process (I_JOYPAD_CLK1, I_JOYPAD_LATCH)
 	begin
@@ -124,11 +143,9 @@ O_KEY6 <= key6;
 	process (I_JOYPAD_LATCH)
 	begin
 		if (I_JOYPAD_LATCH'event and I_JOYPAD_LATCH = '1') then
-			joy_data <= I_JOYPAD_KEYS;
+			joy_data <= joy1 & joy0;
 		end if;
 	end process;
-	
-	
 	
 	process (cnt1, joy_data)
 	begin
@@ -168,5 +185,9 @@ O_KEY6 <= key6;
 			when others => null;
 		end case;
 	end process;
+	
+	O_KEY <= key;
+	O_JOY0 <= joy0;
+	O_JOY1 <= joy1;
 	
 end architecture;

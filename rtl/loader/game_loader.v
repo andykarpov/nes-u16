@@ -18,6 +18,7 @@ module GameLoader(
 	reg [ 7:0] ines[0:15];	// 16 bytes of iNES header
 	reg [21:0] bytes_left;
 	
+//	assign error = (state == 3);
 	assign mem_data = indata;
 	assign mem_write = (bytes_left != 0) && (state == 1 || state == 2) && indata_clk;
 	
@@ -28,7 +29,7 @@ module GameLoader(
 				ines[4] <= 16 ? 4 : 
 				ines[4] <= 32 ? 5 : 
 				ines[4] <= 64 ? 6 : 7;
-												
+
 	wire [2:0] chr_size = 	ines[5] <= 1 ? 0 : 
 				ines[5] <= 2 ? 1 : 
 				ines[5] <= 4 ? 2 : 

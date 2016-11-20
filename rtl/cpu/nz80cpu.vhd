@@ -1,7 +1,7 @@
 -------------------------------------------------------------------[09.04.2014]
 -- NZ80CPU v1.2.1
 -------------------------------------------------------------------------------
--- Engineer: 	MVV
+-- Engineer: MVV <mvvproject@gmail.com>
 --
 -- Description: 
 --		Implementation of Z80 compatible CPU based on sources file

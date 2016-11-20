@@ -9,24 +9,26 @@
 //-- design of HDMI output for Neo Geo MVS
 
 module hdmidataencoder 
-#(parameter FREQ=27000000, FS=48000, CTS=27000, N=6144) 
+#(parameter FREQ, FS, CTS, N) 
 (
-	input 			i_pixclk,
-	input 			i_hSync,
-	input 			i_vSync,
-	input 			i_blank,
+	input		i_pixclk,
+	input		i_hSync,
+	input		i_vSync,
+	input		i_blank,
 	input [15:0] 	i_audioL,
 	input [15:0] 	i_audioR,	
 	output [3:0] 	o_d0,
 	output [3:0] 	o_d1,
 	output [3:0] 	o_d2,
-	output 			o_data
+	output		o_data
 );
 
 `define AUDIO_TIMER_ADDITION	FS/1000
 `define AUDIO_TIMER_LIMIT	FREQ/1000
+
 localparam [191:0] channelStatus = (FS == 48000)?192'hc202004004:(FS == 44100)?192'hc200004004:192'hc203004004;
 localparam [55:0] audioRegenPacket = {N[7:0], N[15:8], 8'h00, CTS[7:0], CTS[15:8], 16'h0000};
+
 reg [23:0] audioPacketHeader;
 reg [55:0] audioSubPacket[3:0];
 reg [7:0] channelStatusIdx;

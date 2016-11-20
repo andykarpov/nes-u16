@@ -100,7 +100,7 @@ $loader_asm_tpl = file_get_contents(SYN_PATH . 'loader.asm.tpl');
 
 $roms = glob(ROM_PATH . '*.nes');
 $roms_cof = '';
-$roms_asm = '';
+$roms_asm = "rom	db 0\r\n";
 $offset = START_ADDRESS;
 $roms = array_slice($roms, 0, 12);
 
@@ -114,19 +114,14 @@ foreach ($roms as $key => $rom) {
 
 	$asm_bytes = int2hexbytes($offset);
 	$i = $key+1;
-	$roms_asm .= "rom{$i}	db {$asm_bytes}\r\n";
+	//$roms_asm .= "rom{$i}	db {$asm_bytes}\r\n";
+	$rom_name = str_pad(basename($rom), 32);
+	$roms_asm .= "	db {$asm_bytes},\"{$rom_name}\",0\r\n";	
 	$offset += filesize($rom);
 }
 
-if (count($roms) < 12) {
-	for ($i=count($roms)+1; $i<=12; $i++) {
-		$asm_bytes = int2hexbytes($offset);
-		$roms_asm .= "rom{$i}	db {$asm_bytes}\r\n";
-	}
-}
-
 $asm_bytes = int2hexbytes($offset);
-$roms_asm .= "		db {$asm_bytes} ; End\r\n\r\n";
+$roms_asm .= "	db {$asm_bytes} ; End\r\n\r\n";
 
 $loader_asm = tpl($loader_asm_tpl, [
 	'BUILD' => $BUILD, 

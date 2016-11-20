@@ -4,7 +4,7 @@
 -- MODULE: altsyncram 
 
 -- ============================================================
--- File Name: ram.vhd
+-- File Name: osdram.vhd
 -- Megafunction Name(s):
 -- 			altsyncram
 --
@@ -40,11 +40,11 @@ USE ieee.std_logic_1164.all;
 LIBRARY altera_mf;
 USE altera_mf.altera_mf_components.all;
 
-ENTITY ram IS
+ENTITY osdram IS
 	PORT
 	(
-		address_a		: IN STD_LOGIC_VECTOR (12 DOWNTO 0);
-		address_b		: IN STD_LOGIC_VECTOR (12 DOWNTO 0);
+		address_a		: IN STD_LOGIC_VECTOR (9 DOWNTO 0);
+		address_b		: IN STD_LOGIC_VECTOR (9 DOWNTO 0);
 		clock_a		: IN STD_LOGIC  := '1';
 		clock_b		: IN STD_LOGIC ;
 		data_a		: IN STD_LOGIC_VECTOR (7 DOWNTO 0);
@@ -54,10 +54,10 @@ ENTITY ram IS
 		q_a		: OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
 		q_b		: OUT STD_LOGIC_VECTOR (7 DOWNTO 0)
 	);
-END ram;
+END osdram;
 
 
-ARCHITECTURE SYN OF ram IS
+ARCHITECTURE SYN OF osdram IS
 
 	SIGNAL sub_wire0	: STD_LOGIC_VECTOR (7 DOWNTO 0);
 	SIGNAL sub_wire1	: STD_LOGIC_VECTOR (7 DOWNTO 0);
@@ -74,11 +74,11 @@ BEGIN
 		clock_enable_output_a => "BYPASS",
 		clock_enable_output_b => "BYPASS",
 		indata_reg_b => "CLOCK1",
-		init_file => "../rtl/loader/loader.hex",
+		init_file => "../rtl/loader/font81.hex",
 		intended_device_family => "Cyclone IV E",
 		lpm_type => "altsyncram",
-		numwords_a => 8192,
-		numwords_b => 8192,
+		numwords_a => 1024,
+		numwords_b => 1024,
 		operation_mode => "BIDIR_DUAL_PORT",
 		outdata_aclr_a => "NONE",
 		outdata_aclr_b => "NONE",
@@ -87,8 +87,8 @@ BEGIN
 		power_up_uninitialized => "FALSE",
 		read_during_write_mode_port_a => "NEW_DATA_NO_NBE_READ",
 		read_during_write_mode_port_b => "NEW_DATA_NO_NBE_READ",
-		widthad_a => 13,
-		widthad_b => 13,
+		widthad_a => 10,
+		widthad_b => 10,
 		width_a => 8,
 		width_b => 8,
 		width_byteena_a => 1,
@@ -145,9 +145,9 @@ END SYN;
 -- Retrieval info: PRIVATE: JTAG_ENABLED NUMERIC "0"
 -- Retrieval info: PRIVATE: JTAG_ID STRING "NONE"
 -- Retrieval info: PRIVATE: MAXIMUM_DEPTH NUMERIC "0"
--- Retrieval info: PRIVATE: MEMSIZE NUMERIC "65536"
+-- Retrieval info: PRIVATE: MEMSIZE NUMERIC "8192"
 -- Retrieval info: PRIVATE: MEM_IN_BITS NUMERIC "0"
--- Retrieval info: PRIVATE: MIFfilename STRING "../rtl/loader/loader.hex"
+-- Retrieval info: PRIVATE: MIFfilename STRING "../rtl/loader/font81.hex"
 -- Retrieval info: PRIVATE: OPERATION_MODE NUMERIC "3"
 -- Retrieval info: PRIVATE: OUTDATA_ACLR_B NUMERIC "0"
 -- Retrieval info: PRIVATE: OUTDATA_REG_B NUMERIC "0"
@@ -181,11 +181,11 @@ END SYN;
 -- Retrieval info: CONSTANT: CLOCK_ENABLE_OUTPUT_A STRING "BYPASS"
 -- Retrieval info: CONSTANT: CLOCK_ENABLE_OUTPUT_B STRING "BYPASS"
 -- Retrieval info: CONSTANT: INDATA_REG_B STRING "CLOCK1"
--- Retrieval info: CONSTANT: INIT_FILE STRING "../rtl/loader/loader.hex"
+-- Retrieval info: CONSTANT: INIT_FILE STRING "../rtl/loader/font81.hex"
 -- Retrieval info: CONSTANT: INTENDED_DEVICE_FAMILY STRING "Cyclone IV E"
 -- Retrieval info: CONSTANT: LPM_TYPE STRING "altsyncram"
--- Retrieval info: CONSTANT: NUMWORDS_A NUMERIC "8192"
--- Retrieval info: CONSTANT: NUMWORDS_B NUMERIC "8192"
+-- Retrieval info: CONSTANT: NUMWORDS_A NUMERIC "1024"
+-- Retrieval info: CONSTANT: NUMWORDS_B NUMERIC "1024"
 -- Retrieval info: CONSTANT: OPERATION_MODE STRING "BIDIR_DUAL_PORT"
 -- Retrieval info: CONSTANT: OUTDATA_ACLR_A STRING "NONE"
 -- Retrieval info: CONSTANT: OUTDATA_ACLR_B STRING "NONE"
@@ -194,15 +194,15 @@ END SYN;
 -- Retrieval info: CONSTANT: POWER_UP_UNINITIALIZED STRING "FALSE"
 -- Retrieval info: CONSTANT: READ_DURING_WRITE_MODE_PORT_A STRING "NEW_DATA_NO_NBE_READ"
 -- Retrieval info: CONSTANT: READ_DURING_WRITE_MODE_PORT_B STRING "NEW_DATA_NO_NBE_READ"
--- Retrieval info: CONSTANT: WIDTHAD_A NUMERIC "13"
--- Retrieval info: CONSTANT: WIDTHAD_B NUMERIC "13"
+-- Retrieval info: CONSTANT: WIDTHAD_A NUMERIC "10"
+-- Retrieval info: CONSTANT: WIDTHAD_B NUMERIC "10"
 -- Retrieval info: CONSTANT: WIDTH_A NUMERIC "8"
 -- Retrieval info: CONSTANT: WIDTH_B NUMERIC "8"
 -- Retrieval info: CONSTANT: WIDTH_BYTEENA_A NUMERIC "1"
 -- Retrieval info: CONSTANT: WIDTH_BYTEENA_B NUMERIC "1"
 -- Retrieval info: CONSTANT: WRCONTROL_WRADDRESS_REG_B STRING "CLOCK1"
--- Retrieval info: USED_PORT: address_a 0 0 13 0 INPUT NODEFVAL "address_a[12..0]"
--- Retrieval info: USED_PORT: address_b 0 0 13 0 INPUT NODEFVAL "address_b[12..0]"
+-- Retrieval info: USED_PORT: address_a 0 0 10 0 INPUT NODEFVAL "address_a[9..0]"
+-- Retrieval info: USED_PORT: address_b 0 0 10 0 INPUT NODEFVAL "address_b[9..0]"
 -- Retrieval info: USED_PORT: clock_a 0 0 0 0 INPUT VCC "clock_a"
 -- Retrieval info: USED_PORT: clock_b 0 0 0 0 INPUT NODEFVAL "clock_b"
 -- Retrieval info: USED_PORT: data_a 0 0 8 0 INPUT NODEFVAL "data_a[7..0]"
@@ -211,8 +211,8 @@ END SYN;
 -- Retrieval info: USED_PORT: q_b 0 0 8 0 OUTPUT NODEFVAL "q_b[7..0]"
 -- Retrieval info: USED_PORT: wren_a 0 0 0 0 INPUT GND "wren_a"
 -- Retrieval info: USED_PORT: wren_b 0 0 0 0 INPUT GND "wren_b"
--- Retrieval info: CONNECT: @address_a 0 0 13 0 address_a 0 0 13 0
--- Retrieval info: CONNECT: @address_b 0 0 13 0 address_b 0 0 13 0
+-- Retrieval info: CONNECT: @address_a 0 0 10 0 address_a 0 0 10 0
+-- Retrieval info: CONNECT: @address_b 0 0 10 0 address_b 0 0 10 0
 -- Retrieval info: CONNECT: @clock0 0 0 0 0 clock_a 0 0 0 0
 -- Retrieval info: CONNECT: @clock1 0 0 0 0 clock_b 0 0 0 0
 -- Retrieval info: CONNECT: @data_a 0 0 8 0 data_a 0 0 8 0
@@ -221,9 +221,9 @@ END SYN;
 -- Retrieval info: CONNECT: @wren_b 0 0 0 0 wren_b 0 0 0 0
 -- Retrieval info: CONNECT: q_a 0 0 8 0 @q_a 0 0 8 0
 -- Retrieval info: CONNECT: q_b 0 0 8 0 @q_b 0 0 8 0
--- Retrieval info: GEN_FILE: TYPE_NORMAL ram.vhd TRUE
--- Retrieval info: GEN_FILE: TYPE_NORMAL ram.inc FALSE
--- Retrieval info: GEN_FILE: TYPE_NORMAL ram.cmp FALSE
--- Retrieval info: GEN_FILE: TYPE_NORMAL ram.bsf FALSE
--- Retrieval info: GEN_FILE: TYPE_NORMAL ram_inst.vhd FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL osdram.vhd TRUE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL osdram.inc FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL osdram.cmp FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL osdram.bsf FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL osdram_inst.vhd FALSE
 -- Retrieval info: LIB_FILE: altera_mf

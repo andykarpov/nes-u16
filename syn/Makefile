@@ -20,18 +20,15 @@ BOARDFILE = revA
 # Sources
 
 SRCS = ../rtl/NES_u16.v \
-	../rtl/Gameloader.v \
-	../rtl/hdmi-audio/av_hdmi.vhd \
-	../rtl/hdmi-audio/encoder.vhd \
-	../rtl/hdmi-audio/hdmidelay.vhd \
-	../rtl/hdmi-audio/serializer.vhd \
-	../rtl/hdmi-audio/hdmidataencoder.v \
-	../rtl/video/fb_video.v \
-	../rtl/pll/clk21.vhd \
-	../rtl/pll/clk27.vhd \
-	../rtl/pll/clock.vhd \
+	../rtl/loader/game_loader.v \
+	../rtl/hdmi/altddio_out1.vhd \
+	../rtl/hdmi/encoder.vhd \
+	../rtl/hdmi/hdmi.vhd \
+	../rtl/hdmi/hdmidataencoder.v \
+	../rtl/pll/clk.v \
 	../rtl/memory/sdram.v \
 	../rtl/memory/ram.vhd \
+	../rtl/memory/osdram.vhd \
 	../rtl/memory/framebuffer.vhd \
 	../rtl/spi/spi.vhd \
 	../rtl/sound/sigma_delta_dac.v \
@@ -47,6 +44,7 @@ SRCS = ../rtl/NES_u16.v \
 	../src/cpu.v \
 	../src/compat.v \
 	../src/apu.v \
+	../src/vga.vhd \
 
 ###################################################################
 # Additional variables
